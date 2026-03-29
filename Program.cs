@@ -1,13 +1,19 @@
 using WebAssignment.Interfaces;
 using WebAssignment.Services;
+using Microsoft.EntityFrameworkCore;
+using WebAssignment;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddSingleton<IStudentService, StudentService>();
-builder.Services.AddSingleton<ICourseService, CourseService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
