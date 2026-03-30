@@ -27,12 +27,15 @@ namespace WebAssignment.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var student = _service.GetById(id);
-
-            if (student == null)
-                return NotFound("Student not found");
-
-            return Ok(student);
+            try
+            {
+                var student = _service.GetById(id);
+                return Ok(student);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         // Endpoint 3 — Add Student
@@ -41,6 +44,55 @@ namespace WebAssignment.Controllers
         {
             _service.Add(student);
             return Ok(student);
+        }
+
+        // Endpoint 4 — Enroll Student in Course
+        [HttpPost("{studentId}/enroll/{courseId}")]
+        public IActionResult EnrollInCourse(int studentId, int courseId)
+        {
+            try
+            {
+                _service.EnrollStudentInCourse(studentId, courseId);
+                return Ok("Student enrolled successfully");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // Endpoint 5 — Get All Courses for a Student
+        [HttpGet("{id}/courses")]
+        public IActionResult GetStudentCourses(int id)
+        {
+            try
+            {
+                var courses = _service.GetStudentCourses(id);
+                return Ok(courses);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        // Endpoint 6 — Withdraw from Course
+        [HttpDelete("{studentId}/withdraw/{courseId}")]
+        public IActionResult WithdrawFromCourse(int studentId, int courseId)
+        {
+            try
+            {
+                _service.WithdrawFromCourse(studentId, courseId);
+                return Ok("Student withdrawn successfully");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

@@ -27,12 +27,15 @@ namespace WebAssignment.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var course = _service.GetById(id);
-
-            if (course == null)
-                return NotFound("Course not found");
-
-            return Ok(course);
+            try
+            {
+                var course = _service.GetById(id);
+                return Ok(course);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         // Endpoint 3 — Add Course
@@ -41,6 +44,36 @@ namespace WebAssignment.Controllers
         {
             _service.Add(course);
             return Ok(course);
+        }
+
+        // Endpoint 4 — Get All Enrolled Students for a Course
+        [HttpGet("{id}/enrollments")]
+        public IActionResult GetCourseEnrollments(int id)
+        {
+            try
+            {
+                var students = _service.GetCourseEnrollments(id);
+                return Ok(students);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        // Endpoint 5 — Assign Instructor to Course
+        [HttpPut("{courseId}/instructor/{instructorId}")]
+        public IActionResult AssignInstructor(int courseId, int instructorId)
+        {
+            try
+            {
+                _service.AssignInstructor(courseId, instructorId);
+                return Ok("Instructor assigned successfully");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
