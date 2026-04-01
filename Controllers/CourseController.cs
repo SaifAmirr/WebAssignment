@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
 
@@ -9,10 +10,12 @@ namespace WebAssignment.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _service;
+        private readonly IInstructorService _instructorService;
 
-        public CourseController(ICourseService service)
+        public CourseController(ICourseService service, IInstructorService instructorService)
         {
             _service = service;
+            _instructorService = instructorService;
         }
 
         // Endpoint 1 — Get All Courses
@@ -20,7 +23,15 @@ namespace WebAssignment.Controllers
         public IActionResult GetAll()
         {
             var courses = _service.GetAll();
-            return Ok(courses);
+            var response = courses.Select(c => new CourseResponseDto
+            {
+                Id = c.Id,
+                Title = c.Title,
+                CreditHours = c.CreditHours,
+                InstructorId = c.InstructorId,
+                InstructorName = c.Instructor?.Name
+            }).ToList();
+            return Ok(response);
         }
 
         // Endpoint 2 — Get Course by Id
@@ -30,7 +41,15 @@ namespace WebAssignment.Controllers
             try
             {
                 var course = _service.GetById(id);
-                return Ok(course);
+                var response = new CourseResponseDto
+                {
+                    Id = course.Id,
+                    Title = course.Title,
+                    CreditHours = course.CreditHours,
+                    InstructorId = course.InstructorId,
+                    InstructorName = course.Instructor?.Name
+                };
+                return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {
@@ -40,10 +59,39 @@ namespace WebAssignment.Controllers
 
         // Endpoint 3 — Add Course
         [HttpPost]
-        public IActionResult Add(Course course)
+        public IActionResult Add([FromBody] CourseCreateDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Instructor instructor = _instructorService.GetById(dto.InstructorId);
+            
+            if (instructor == null)
+            {
+                return NotFound($"Instructor with Id {dto.InstructorId} not found");
+            }
+                       
+            var course = new Course
+            {
+                Title = dto.Title,
+                CreditHours = dto.CreditHours,
+                InstructorId = dto.InstructorId,
+                Instructor = instructor
+            };
+
             _service.Add(course);
-            return Ok(course);
+            
+            var response = new CourseResponseDto
+            {
+                Id = course.Id,
+                Title = course.Title,
+                CreditHours = course.CreditHours,
+                InstructorId = course.InstructorId,
+                InstructorName = course.Instructor?.Name
+            };
+            return Ok(response);
         }
 
         // Endpoint 4 — Get All Enrolled Students for a Course
@@ -53,7 +101,13 @@ namespace WebAssignment.Controllers
             try
             {
                 var students = _service.GetCourseEnrollments(id);
-                return Ok(students);
+                var response = students.Select(s => new StudentResponseDto
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    GPA = s.GPA
+                }).ToList();
+                return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {

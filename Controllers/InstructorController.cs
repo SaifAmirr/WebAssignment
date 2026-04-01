@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
 
@@ -20,7 +21,14 @@ namespace WebAssignment.Controllers
         public IActionResult GetAll()
         {
             var instructors = _service.GetAll();
-            return Ok(instructors);
+            var response = instructors.Select(i => new InstructorResponseDto
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Department = i.Department,
+                Email = i.Email
+            }).ToList();
+            return Ok(response);
         }
 
         // Endpoint 2 — Get Instructor by Id
@@ -30,7 +38,14 @@ namespace WebAssignment.Controllers
             try
             {
                 var instructor = _service.GetById(id);
-                return Ok(instructor);
+                var response = new InstructorResponseDto
+                {
+                    Id = instructor.Id,
+                    Name = instructor.Name,
+                    Department = instructor.Department,
+                    Email = instructor.Email
+                };
+                return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {
@@ -40,25 +55,59 @@ namespace WebAssignment.Controllers
 
         // Endpoint 3 — Add Instructor
         [HttpPost]
-        public IActionResult Add(Instructor instructor)
+        public IActionResult Add([FromBody] InstructorCreateDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var instructor = new Instructor
+            {
+                Name = dto.Name,
+                Department = dto.Department,
+                Email = dto.Email
+            };
+
             _service.Add(instructor);
-            return Ok(instructor);
+            
+            var response = new InstructorResponseDto
+            {
+                Id = instructor.Id,
+                Name = instructor.Name,
+                Department = instructor.Department,
+                Email = instructor.Email
+            };
+            return Ok(response);
         }
 
         // Endpoint 4 — Create or Update Instructor Profile
         [HttpPost("{id}/profile")]
-        public IActionResult CreateOrUpdateProfile(int id, InstructorProfile profile)
+        public IActionResult CreateOrUpdateProfile(int id, [FromBody] InstructorProfileCreateDto dto)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                _service.CreateOrUpdateProfile(id, profile);
-                return Ok("Profile created or updated successfully");
+                return BadRequest(ModelState);
             }
-            catch (KeyNotFoundException ex)
+
+            Instructor instructor = _service.GetById(id);
+            
+            if (instructor == null)
             {
-                return NotFound(ex.Message);
+                return NotFound($"Instructor with Id {id} not found");
             }
+
+            var profile = new InstructorProfile
+            {
+                PhoneNumber = dto.PhoneNumber,
+                OfficeLocation = dto.OfficeLocation,
+                YearsOfExperience = dto.YearsOfExperience,
+                InstructorId = id,
+                Instructor = instructor
+            };
+
+            _service.CreateOrUpdateProfile(id, profile);
+            return Ok("Profile created or updated successfully");
         }
 
         // Endpoint 5 — Get Instructor Profile
@@ -68,7 +117,15 @@ namespace WebAssignment.Controllers
             try
             {
                 var profile = _service.GetProfile(id);
-                return Ok(profile);
+                var response = new InstructorProfileResponseDto
+                {
+                    Id = profile.Id,
+                    PhoneNumber = profile.PhoneNumber,
+                    OfficeLocation = profile.OfficeLocation,
+                    YearsOfExperience = profile.YearsOfExperience,
+                    InstructorId = profile.InstructorId
+                };
+                return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {
@@ -83,7 +140,15 @@ namespace WebAssignment.Controllers
             try
             {
                 var courses = _service.GetInstructorCourses(id);
-                return Ok(courses);
+                var response = courses.Select(c => new CourseResponseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    CreditHours = c.CreditHours,
+                    InstructorId = c.InstructorId,
+                    InstructorName = c.Instructor?.Name
+                }).ToList();
+                return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {

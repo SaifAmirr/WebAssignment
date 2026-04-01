@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
 
@@ -20,7 +21,13 @@ namespace WebAssignment.Controllers
         public IActionResult GetAll()
         {
             var students = _service.GetAll();
-            return Ok(students);
+            var response = students.Select(s => new StudentResponseDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                GPA = s.GPA
+            }).ToList();
+            return Ok(response);
         }
 
         // Endpoint 2 — Get Student by Id
@@ -30,7 +37,13 @@ namespace WebAssignment.Controllers
             try
             {
                 var student = _service.GetById(id);
-                return Ok(student);
+                var response = new StudentResponseDto
+                {
+                    Id = student.Id,
+                    Name = student.Name,
+                    GPA = student.GPA
+                };
+                return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {
@@ -40,10 +53,28 @@ namespace WebAssignment.Controllers
 
         // Endpoint 3 — Add Student
         [HttpPost]
-        public IActionResult Add(Student student)
+        public IActionResult Add([FromBody] StudentCreateDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var student = new Student
+            {
+                Name = dto.Name,
+                GPA = dto.GPA
+            };
+
             _service.Add(student);
-            return Ok(student);
+            
+            var response = new StudentResponseDto
+            {
+                Id = student.Id,
+                Name = student.Name,
+                GPA = student.GPA
+            };
+            return Ok(response);
         }
 
         // Endpoint 4 — Enroll Student in Course
@@ -72,7 +103,15 @@ namespace WebAssignment.Controllers
             try
             {
                 var courses = _service.GetStudentCourses(id);
-                return Ok(courses);
+                var response = courses.Select(c => new CourseResponseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    CreditHours = c.CreditHours,
+                    InstructorId = c.InstructorId,
+                    InstructorName = c.Instructor?.Name
+                }).ToList();
+                return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {
