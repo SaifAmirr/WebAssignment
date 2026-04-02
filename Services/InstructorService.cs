@@ -28,6 +28,12 @@ namespace WebAssignment.Services
             _context.SaveChanges();
         }
 
+        public void Update(Instructor instructor)
+        {
+            _context.Instructors.Update(instructor);
+            _context.SaveChanges();
+        }
+
         public void CreateOrUpdateProfile(int instructorId, InstructorProfile profile)
         {
             var instructor = GetById(instructorId);
@@ -45,6 +51,12 @@ namespace WebAssignment.Services
                 _context.InstructorProfiles.Update(instructor.InstructorProfile);
             }
 
+            _context.SaveChanges();
+        }
+
+        public void UpdateProfile(InstructorProfile profile)
+        {
+            _context.InstructorProfiles.Update(profile);
             _context.SaveChanges();
         }
 

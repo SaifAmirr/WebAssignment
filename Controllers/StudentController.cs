@@ -77,7 +77,36 @@ namespace WebAssignment.Controllers
             return Ok(response);
         }
 
-        // Endpoint 4 — Enroll Student in Course
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody] StudentUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var student = _service.GetById(id);
+                student.Name = dto.Name;
+                student.GPA = dto.GPA;
+
+                _service.Update(student);
+
+                var response = new StudentResponseDto
+                {
+                    Id = student.Id,
+                    Name = student.Name,
+                    GPA = student.GPA
+                };
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
         [HttpPost("{studentId}/enroll/{courseId}")]
         public IActionResult EnrollInCourse(int studentId, int courseId)
         {
@@ -112,6 +141,37 @@ namespace WebAssignment.Controllers
                     InstructorName = c.Instructor?.Name
                 }).ToList();
                 return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("{studentId}/enrollments")]
+        public IActionResult GetEnrollments(int studentId)
+        {
+            try
+            {
+                var enrollments = _service.GetStudentCourses(studentId);
+                var student = _service.GetById(studentId);
+                
+                var enrollmentData = new List<dynamic>();
+                foreach (var course in enrollments)
+                {
+                    var enrollment = new
+                    {
+                        StudentId = studentId,
+                        StudentName = student.Name,
+                        CourseId = course.Id,
+                        CourseName = course.Title,
+                        CreditHours = course.CreditHours,
+                        InstructorName = course.Instructor?.Name
+                    };
+                    enrollmentData.Add(enrollment);
+                }
+
+                return Ok(enrollmentData);
             }
             catch (KeyNotFoundException ex)
             {

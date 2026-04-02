@@ -28,6 +28,12 @@ namespace WebAssignment.Services
             _context.SaveChanges();
         }
 
+        public void Update(Student student)
+        {
+            _context.Students.Update(student);
+            _context.SaveChanges();
+        }
+
         public void EnrollStudentInCourse(int studentId, int courseId)
         {
             var student = GetById(studentId);

@@ -27,6 +27,12 @@ namespace WebAssignment.Services
             _context.SaveChanges();
         }
 
+        public void Update(Course course)
+        {
+            _context.Courses.Update(course);
+            _context.SaveChanges();
+        }
+
         public List<Student> GetCourseEnrollments(int courseId)
         {
             _ = GetById(courseId); // Verify course exists

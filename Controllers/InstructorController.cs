@@ -81,6 +81,38 @@ namespace WebAssignment.Controllers
             return Ok(response);
         }
 
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody] InstructorUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var instructor = _service.GetById(id);
+                instructor.Name = dto.Name;
+                instructor.Department = dto.Department;
+                instructor.Email = dto.Email;
+
+                _service.Update(instructor);
+
+                var response = new InstructorResponseDto
+                {
+                    Id = instructor.Id,
+                    Name = instructor.Name,
+                    Department = instructor.Department,
+                    Email = instructor.Email
+                };
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
         // Endpoint 4 — Create or Update Instructor Profile
         [HttpPost("{id}/profile")]
         public IActionResult CreateOrUpdateProfile(int id, [FromBody] InstructorProfileCreateDto dto)
@@ -108,6 +140,39 @@ namespace WebAssignment.Controllers
 
             _service.CreateOrUpdateProfile(id, profile);
             return Ok("Profile created or updated successfully");
+        }
+
+        [HttpPut("{id}/profile")]
+        public IActionResult UpdateProfile(int id, [FromBody] InstructorProfileUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var profile = _service.GetProfile(id);
+                profile.PhoneNumber = dto.PhoneNumber;
+                profile.OfficeLocation = dto.OfficeLocation;
+                profile.YearsOfExperience = dto.YearsOfExperience;
+
+                _service.UpdateProfile(profile);
+
+                var response = new InstructorProfileResponseDto
+                {
+                    Id = profile.Id,
+                    PhoneNumber = profile.PhoneNumber,
+                    OfficeLocation = profile.OfficeLocation,
+                    YearsOfExperience = profile.YearsOfExperience,
+                    InstructorId = profile.InstructorId
+                };
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         // Endpoint 5 — Get Instructor Profile

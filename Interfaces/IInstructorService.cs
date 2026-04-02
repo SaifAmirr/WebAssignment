@@ -7,7 +7,9 @@ namespace WebAssignment.Interfaces
         List<Instructor> GetAll();
         Instructor GetById(int id);
         void Add(Instructor instructor);
+        void Update(Instructor instructor);
         void CreateOrUpdateProfile(int instructorId, InstructorProfile profile);
+        void UpdateProfile(InstructorProfile profile);
         InstructorProfile GetProfile(int instructorId);
         List<Course> GetInstructorCourses(int instructorId);
     }
