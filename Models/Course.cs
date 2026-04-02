@@ -10,7 +10,7 @@ namespace WebAssignment.Models
         public int InstructorId { get; set; }
 
         // One-to-Many relationship with Instructor
-        public required Instructor Instructor { get; set; }
+        public Instructor? Instructor { get; set; }
 
         // Many-to-Many relationship with Student through Enrollment
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();

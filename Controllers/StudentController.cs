@@ -24,13 +24,7 @@ namespace WebAssignment.Controllers
         public IActionResult GetAll()
         {
             var students = _service.GetAll();
-            var response = students.Select(s => new StudentResponseDto
-            {
-                Id = s.Id,
-                Name = s.Name,
-                GPA = s.GPA
-            }).ToList();
-            return Ok(response);
+            return Ok(students);
         }
 
         // Endpoint 2 — Get Student by Id
@@ -41,13 +35,7 @@ namespace WebAssignment.Controllers
             try
             {
                 var student = _service.GetById(id);
-                var response = new StudentResponseDto
-                {
-                    Id = student.Id,
-                    Name = student.Name,
-                    GPA = student.GPA
-                };
-                return Ok(response);
+                return Ok(student);
             }
             catch (KeyNotFoundException ex)
             {
@@ -93,19 +81,17 @@ namespace WebAssignment.Controllers
 
             try
             {
-                var student = _service.GetById(id);
-                student.Name = dto.Name;
-                student.GPA = dto.GPA;
+                var student = new Student
+                {
+                    Id = id,
+                    Name = dto.Name,
+                    GPA = dto.GPA
+                };
 
                 _service.Update(student);
 
-                var response = new StudentResponseDto
-                {
-                    Id = student.Id,
-                    Name = student.Name,
-                    GPA = student.GPA
-                };
-                return Ok(response);
+                var updated = _service.GetById(id);
+                return Ok(updated);
             }
             catch (KeyNotFoundException ex)
             {
@@ -140,15 +126,7 @@ namespace WebAssignment.Controllers
             try
             {
                 var courses = _service.GetStudentCourses(id);
-                var response = courses.Select(c => new CourseResponseDto
-                {
-                    Id = c.Id,
-                    Title = c.Title,
-                    CreditHours = c.CreditHours,
-                    InstructorId = c.InstructorId,
-                    InstructorName = c.Instructor?.Name
-                }).ToList();
-                return Ok(response);
+                return Ok(courses);
             }
             catch (KeyNotFoundException ex)
             {
@@ -162,24 +140,19 @@ namespace WebAssignment.Controllers
         {
             try
             {
-                var enrollments = _service.GetStudentCourses(studentId);
+                var courses = _service.GetStudentCourses(studentId);
                 var student = _service.GetById(studentId);
                 
-                var enrollmentData = new List<dynamic>();
-                foreach (var course in enrollments)
+                var enrollmentData = courses.Select(c => new
                 {
-                    var enrollment = new
-                    {
-                        StudentId = studentId,
-                        StudentName = student.Name,
-                        CourseId = course.Id,
-                        CourseName = course.Title,
-                        CreditHours = course.CreditHours,
-                        InstructorName = course.Instructor?.Name
-                    };
-                    enrollmentData.Add(enrollment);
-                }
-
+                    StudentId = studentId,
+                    StudentName = student.Name,
+                    CourseId = c.Id,
+                    CourseName = c.Title,
+                    CreditHours = c.CreditHours,
+                    InstructorName = c.InstructorName
+                }).ToList();
+                
                 return Ok(enrollmentData);
             }
             catch (KeyNotFoundException ex)

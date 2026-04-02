@@ -1,5 +1,6 @@
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
+using WebAssignment.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebAssignment.Services
@@ -13,14 +14,31 @@ namespace WebAssignment.Services
             _context = context;
         }
 
-        public List<Instructor> GetAll()
-            => _context.Instructors.Include(i => i.InstructorProfile).Include(i => i.Courses).ToList();
+        public List<InstructorResponseDto> GetAll() => _context.Instructors
+            .AsNoTracking()
+            .Select(i => new InstructorResponseDto
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Department = i.Department,
+                Email = i.Email
+            })
+            .ToList();
 
-        public Instructor GetById(int id)
-            => _context.Instructors
-                .Include(i => i.InstructorProfile)
-                .Include(i => i.Courses)
-                .FirstOrDefault(i => i.Id == id) ?? throw new KeyNotFoundException($"Instructor with id {id} not found.");
+        public InstructorResponseDto GetById(int id) => _context.Instructors
+            .AsNoTracking()
+            .Where(i => i.Id == id)
+            .Select(i => new InstructorResponseDto
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Department = i.Department,
+                Email = i.Email
+            })
+            .FirstOrDefault() ?? throw new KeyNotFoundException($"Instructor with id {id} not found.");
+
+        private Instructor GetInstructorEntity(int id) => _context.Instructors
+            .FirstOrDefault(i => i.Id == id) ?? throw new KeyNotFoundException($"Instructor with id {id} not found.");
 
         public void Add(Instructor instructor)
         {
@@ -36,7 +54,7 @@ namespace WebAssignment.Services
 
         public void CreateOrUpdateProfile(int instructorId, InstructorProfile profile)
         {
-            var instructor = GetById(instructorId);
+            var instructor = GetInstructorEntity(instructorId);
             
             if (instructor.InstructorProfile == null)
             {
@@ -60,18 +78,35 @@ namespace WebAssignment.Services
             _context.SaveChanges();
         }
 
-        public InstructorProfile GetProfile(int instructorId)
-        {
-            var profile = _context.InstructorProfiles
-                .FirstOrDefault(ip => ip.InstructorId == instructorId);
-            
-            return profile ?? throw new KeyNotFoundException($"Profile for instructor {instructorId} not found.");
-        }
+        public InstructorProfileResponseDto GetProfile(int instructorId) => _context.InstructorProfiles
+            .AsNoTracking()
+            .Where(ip => ip.InstructorId == instructorId)
+            .Select(ip => new InstructorProfileResponseDto
+            {
+                Id = ip.Id,
+                PhoneNumber = ip.PhoneNumber,
+                OfficeLocation = ip.OfficeLocation,
+                YearsOfExperience = ip.YearsOfExperience,
+                InstructorId = ip.InstructorId
+            })
+            .FirstOrDefault() ?? throw new KeyNotFoundException($"Profile for instructor {instructorId} not found.");
 
-        public List<Course> GetInstructorCourses(int instructorId)
+        public List<CourseResponseDto> GetInstructorCourses(int instructorId)
         {
-            _ = GetById(instructorId); // Verify instructor exists
-            return _context.Courses.Where(c => c.InstructorId == instructorId).ToList();
+            var instructor = GetInstructorEntity(instructorId);
+            return _context.Courses
+                .AsNoTracking()
+                .Where(c => c.InstructorId == instructorId)
+                .Include(c => c.Instructor)
+                .Select(c => new CourseResponseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    CreditHours = c.CreditHours,
+                    InstructorId = c.InstructorId,
+                    InstructorName = c.Instructor!.Name
+                })
+                .ToList();
         }
     }
 }

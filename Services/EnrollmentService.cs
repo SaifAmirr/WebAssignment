@@ -1,5 +1,6 @@
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
+using WebAssignment.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebAssignment.Services
@@ -13,12 +14,20 @@ namespace WebAssignment.Services
             _context = context;
         }
 
-        public Enrollment GetEnrollment(int studentId, int courseId)
+        public EnrollmentResponseDto GetEnrollment(int studentId, int courseId)
         {
             return _context.Enrollments
-                .Include(e => e.Student)
-                .Include(e => e.Course)
-                .FirstOrDefault(e => e.StudentId == studentId && e.CourseId == courseId)
+                .AsNoTracking()
+                .Where(e => e.StudentId == studentId && e.CourseId == courseId)
+                .Select(e => new EnrollmentResponseDto
+                {
+                    Id = e.Id,
+                    StudentId = e.StudentId,
+                    CourseId = e.CourseId,
+                    Grade = e.Grade,
+                    EnrollmentDate = e.EnrollmentDate
+                })
+                .FirstOrDefault()
                 ?? throw new KeyNotFoundException($"Enrollment for student {studentId} in course {courseId} not found.");
         }
 
@@ -28,22 +37,45 @@ namespace WebAssignment.Services
             _context.SaveChanges();
         }
 
-        public List<Enrollment> GetStudentEnrollments(int studentId)
+        public List<EnrollmentResponseDto> GetStudentEnrollments(int studentId)
         {
             return _context.Enrollments
+                .AsNoTracking()
                 .Where(e => e.StudentId == studentId)
-                .Include(e => e.Student)
-                .Include(e => e.Course)
+                .Select(e => new EnrollmentResponseDto
+                {
+                    Id = e.Id,
+                    StudentId = e.StudentId,
+                    CourseId = e.CourseId,
+                    Grade = e.Grade,
+                    EnrollmentDate = e.EnrollmentDate
+                })
                 .ToList();
         }
 
-        public List<Enrollment> GetCourseEnrollments(int courseId)
+        public List<EnrollmentResponseDto> GetCourseEnrollments(int courseId)
         {
             return _context.Enrollments
+                .AsNoTracking()
                 .Where(e => e.CourseId == courseId)
+                .Select(e => new EnrollmentResponseDto
+                {
+                    Id = e.Id,
+                    StudentId = e.StudentId,
+                    CourseId = e.CourseId,
+                    Grade = e.Grade,
+                    EnrollmentDate = e.EnrollmentDate
+                })
+                .ToList();
+        }
+
+        private Enrollment GetEnrollmentEntity(int studentId, int courseId)
+        {
+            return _context.Enrollments
                 .Include(e => e.Student)
                 .Include(e => e.Course)
-                .ToList();
+                .FirstOrDefault(e => e.StudentId == studentId && e.CourseId == courseId)
+                ?? throw new KeyNotFoundException($"Enrollment for student {studentId} in course {courseId} not found.");
         }
     }
 }

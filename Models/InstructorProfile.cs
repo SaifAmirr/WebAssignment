@@ -11,6 +11,6 @@ namespace WebAssignment.Models
         public int InstructorId { get; set; }
 
         // One-to-One relationship with Instructor
-        public required Instructor Instructor { get; set; }
+        public Instructor? Instructor { get; set; }
     }
 }

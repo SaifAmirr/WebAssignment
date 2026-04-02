@@ -25,15 +25,7 @@ namespace WebAssignment.Controllers
         public IActionResult GetAll()
         {
             var courses = _service.GetAll();
-            var response = courses.Select(c => new CourseResponseDto
-            {
-                Id = c.Id,
-                Title = c.Title,
-                CreditHours = c.CreditHours,
-                InstructorId = c.InstructorId,
-                InstructorName = c.Instructor?.Name
-            }).ToList();
-            return Ok(response);
+            return Ok(courses);
         }
 
         // Endpoint 2 — Get Course by Id
@@ -44,15 +36,47 @@ namespace WebAssignment.Controllers
             try
             {
                 var course = _service.GetById(id);
-                var response = new CourseResponseDto
+                return Ok(course);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Instructor")]
+        public IActionResult Update(int id, [FromBody] CourseUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                // Validate instructor exists
+                try
                 {
-                    Id = course.Id,
-                    Title = course.Title,
-                    CreditHours = course.CreditHours,
-                    InstructorId = course.InstructorId,
-                    InstructorName = course.Instructor?.Name
+                    _instructorService.GetById(dto.InstructorId);
+                }
+                catch (KeyNotFoundException)
+                {
+                    return NotFound($"Instructor with Id {dto.InstructorId} not found");
+                }
+
+                var course = new Course
+                {
+                    Id = id,
+                    Title = dto.Title,
+                    CreditHours = dto.CreditHours,
+                    InstructorId = dto.InstructorId
                 };
-                return Ok(response);
+
+                _service.Update(course);
+
+                var updated = _service.GetById(id);
+                return Ok(updated);
             }
             catch (KeyNotFoundException ex)
             {
@@ -70,9 +94,12 @@ namespace WebAssignment.Controllers
                 return BadRequest(ModelState);
             }
 
-            Instructor instructor = _instructorService.GetById(dto.InstructorId);
-            
-            if (instructor == null)
+            // Validate instructor exists by trying to fetch it
+            try
+            {
+                _instructorService.GetById(dto.InstructorId);
+            }
+            catch (KeyNotFoundException)
             {
                 return NotFound($"Instructor with Id {dto.InstructorId} not found");
             }
@@ -81,20 +108,12 @@ namespace WebAssignment.Controllers
             {
                 Title = dto.Title,
                 CreditHours = dto.CreditHours,
-                InstructorId = dto.InstructorId,
-                Instructor = instructor
+                InstructorId = dto.InstructorId
             };
 
             _service.Add(course);
             
-            var response = new CourseResponseDto
-            {
-                Id = course.Id,
-                Title = course.Title,
-                CreditHours = course.CreditHours,
-                InstructorId = course.InstructorId,
-                InstructorName = course.Instructor?.Name
-            };
+            var response = _service.GetById(course.Id);
             return Ok(response);
         }
 
@@ -106,13 +125,7 @@ namespace WebAssignment.Controllers
             try
             {
                 var students = _service.GetCourseEnrollments(id);
-                var response = students.Select(s => new StudentResponseDto
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    GPA = s.GPA
-                }).ToList();
-                return Ok(response);
+                return Ok(students);
             }
             catch (KeyNotFoundException ex)
             {

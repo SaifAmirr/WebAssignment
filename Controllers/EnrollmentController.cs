@@ -29,21 +29,19 @@ namespace WebAssignment.Controllers
 
             try
             {
-                var enrollment = _service.GetEnrollment(studentId, courseId);
-                enrollment.Grade = dto.Grade;
+                var enrollmentDto = _service.GetEnrollment(studentId, courseId);
+                var enrollment = new Enrollment
+                {
+                    Id = enrollmentDto.Id,
+                    StudentId = studentId,
+                    CourseId = courseId,
+                    Grade = dto.Grade,
+                    EnrollmentDate = enrollmentDto.EnrollmentDate
+                };
 
                 _service.UpdateEnrollment(enrollment);
 
-                var response = new EnrollmentResponseDto
-                {
-                    Id = enrollment.Id,
-                    EnrollmentDate = enrollment.EnrollmentDate,
-                    Grade = enrollment.Grade,
-                    StudentId = enrollment.StudentId,
-                    CourseId = enrollment.CourseId,
-                    StudentName = enrollment.Student?.Name,
-                    CourseName = enrollment.Course?.Title
-                };
+                var response = _service.GetEnrollment(studentId, courseId);
                 return Ok(response);
             }
             catch (KeyNotFoundException ex)

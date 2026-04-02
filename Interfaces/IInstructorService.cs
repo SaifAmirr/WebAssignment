@@ -1,16 +1,17 @@
 using WebAssignment.Models;
+using WebAssignment.DTOs;
 
 namespace WebAssignment.Interfaces
 {
     public interface IInstructorService
     {
-        List<Instructor> GetAll();
-        Instructor GetById(int id);
+        List<InstructorResponseDto> GetAll();
+        InstructorResponseDto GetById(int id);
         void Add(Instructor instructor);
         void Update(Instructor instructor);
         void CreateOrUpdateProfile(int instructorId, InstructorProfile profile);
         void UpdateProfile(InstructorProfile profile);
-        InstructorProfile GetProfile(int instructorId);
-        List<Course> GetInstructorCourses(int instructorId);
+        InstructorProfileResponseDto GetProfile(int instructorId);
+        List<CourseResponseDto> GetInstructorCourses(int instructorId);
     }
 }
