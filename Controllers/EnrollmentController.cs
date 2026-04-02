@@ -4,6 +4,7 @@ using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
 
+
 namespace WebAssignment.Controllers
 {
     [ApiController]
@@ -16,6 +17,69 @@ namespace WebAssignment.Controllers
         public EnrollmentController(IEnrollmentService service)
         {
             _service = service;
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Enroll([FromBody] EnrollmentCreateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var enrollment = new Enrollment
+                {
+                    StudentId = dto.StudentId,
+                    CourseId = dto.CourseId,
+                    EnrollmentDate = DateTime.UtcNow
+                };
+
+                await _service.AddEnrollmentAsync(enrollment);
+
+                var response = await _service.GetEnrollmentAsync(dto.StudentId, dto.CourseId);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("student/{studentId}")]
+        [Authorize]
+        public async Task<IActionResult> GetStudentEnrollments(int studentId)
+        {
+            try
+            {
+                var enrollments = await _service.GetStudentEnrollmentsAsync(studentId);
+                return Ok(enrollments);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("course/{courseId}")]
+        [Authorize(Roles = "Instructor,Admin")]
+        public async Task<IActionResult> GetCourseEnrollments(int courseId)
+        {
+            try
+            {
+                var enrollments = await _service.GetCourseEnrollmentsAsync(courseId);
+                return Ok(enrollments);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPut("{studentId}/courses/{courseId}")]

@@ -99,68 +99,6 @@ namespace WebAssignment.Controllers
             }
         }
 
-        [HttpPost("{studentId}/enroll/{courseId}")]
-        [Authorize(Roles = "Student")]
-        public async Task<IActionResult> EnrollInCourse(int studentId, int courseId)
-        {
-            try
-            {
-                await _service.EnrollStudentInCourseAsync(studentId, courseId);
-                return Ok("Student enrolled successfully");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        // Endpoint 5 — Get All Courses for a Student
-        [HttpGet("{id}/courses")]
-        [Authorize(Roles = "Student,Instructor,Admin")]
-        public async Task<IActionResult> GetStudentCourses(int id)
-        {
-            try
-            {
-                var courses = await _service.GetStudentCoursesAsync(id);
-                return Ok(courses);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
-        [HttpGet("{studentId}/enrollments")]
-        [Authorize(Roles = "Student,Instructor,Admin")]
-        public async Task<IActionResult> GetEnrollments(int studentId)
-        {
-            try
-            {
-                var courses = await _service.GetStudentCoursesAsync(studentId);
-                var student = await _service.GetByIdAsync(studentId);
-                
-                var enrollmentData = courses.Select(c => new
-                {
-                    StudentId = studentId,
-                    StudentName = student.Name,
-                    CourseId = c.Id,
-                    CourseName = c.Title,
-                    CreditHours = c.CreditHours,
-                    InstructorName = c.InstructorName
-                }).ToList();
-                
-                return Ok(enrollmentData);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
         // Endpoint 6 — Withdraw from Course
         [HttpDelete("{studentId}/withdraw/{courseId}")]
         [Authorize(Roles = "Student")]

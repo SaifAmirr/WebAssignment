@@ -20,7 +20,6 @@ namespace WebAssignment.Controllers
 
         // Endpoint 1 — Get All Instructors
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var instructors = await _service.GetAllAsync();
@@ -29,7 +28,6 @@ namespace WebAssignment.Controllers
 
         // Endpoint 2 — Get Instructor by Id
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -96,35 +94,7 @@ namespace WebAssignment.Controllers
             }
         }
 
-        // Endpoint 4 — Create or Update Instructor Profile
-        [HttpPost("{id}/profile")]
-        [Authorize(Roles = "Instructor,Admin")]
-        public async Task<IActionResult> CreateOrUpdateProfile(int id, [FromBody] InstructorProfileCreateDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                var profile = new InstructorProfile
-                {
-                    PhoneNumber = dto.PhoneNumber,
-                    OfficeLocation = dto.OfficeLocation,
-                    YearsOfExperience = dto.YearsOfExperience,
-                    InstructorId = id
-                };
-
-                await _service.CreateOrUpdateProfileAsync(id, profile);
-                return Ok("Profile created or updated successfully");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
+        // Endpoint 4 — Update Instructor Profile
         [HttpPut("{id}/profile")]
         [Authorize(Roles = "Instructor,Admin")]
         public async Task<IActionResult> UpdateProfile(int id, [FromBody] InstructorProfileUpdateDto dto)

@@ -21,7 +21,6 @@ namespace WebAssignment.Controllers
 
         // Endpoint 1 — Get All Courses
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var courses = await _service.GetAllAsync();
@@ -30,7 +29,6 @@ namespace WebAssignment.Controllers
 
         // Endpoint 2 — Get Course by Id
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -115,22 +113,6 @@ namespace WebAssignment.Controllers
             
             var response = await _service.GetByIdAsync(course.Id);
             return Ok(response);
-        }
-
-        // Endpoint 4 — Get All Enrolled Students for a Course
-        [HttpGet("{id}/enrollments")]
-        [Authorize(Roles = "Instructor,Admin")]
-        public async Task<IActionResult> GetCourseEnrollments(int id)
-        {
-            try
-            {
-                var students = await _service.GetCourseEnrollmentsAsync(id);
-                return Ok(students);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
         }
 
         // Endpoint 5 — Assign Instructor to Course
