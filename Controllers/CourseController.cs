@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
@@ -20,6 +21,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 1 — Get All Courses
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll()
         {
             var courses = _service.GetAll();
@@ -36,6 +38,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 2 — Get Course by Id
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetById(int id)
         {
             try
@@ -59,6 +62,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 3 — Add Course
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public IActionResult Add([FromBody] CourseCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -96,6 +100,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 4 — Get All Enrolled Students for a Course
         [HttpGet("{id}/enrollments")]
+        [Authorize(Roles = "Instructor,Admin")]
         public IActionResult GetCourseEnrollments(int id)
         {
             try
@@ -117,6 +122,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 5 — Assign Instructor to Course
         [HttpPut("{courseId}/instructor/{instructorId}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult AssignInstructor(int courseId, int instructorId)
         {
             try

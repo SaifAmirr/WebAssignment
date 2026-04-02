@@ -20,6 +20,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 1 — Get All Instructors
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll()
         {
             var instructors = _service.GetAll();
@@ -35,6 +36,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 2 — Get Instructor by Id
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetById(int id)
         {
             try
@@ -57,6 +59,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 3 — Add Instructor
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public IActionResult Add([FromBody] InstructorCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -84,6 +87,7 @@ namespace WebAssignment.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Instructor,Admin")]
         public IActionResult Update(int id, [FromBody] InstructorUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -117,6 +121,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 4 — Create or Update Instructor Profile
         [HttpPost("{id}/profile")]
+        [Authorize(Roles = "Instructor,Admin")]
         public IActionResult CreateOrUpdateProfile(int id, [FromBody] InstructorProfileCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -145,6 +150,7 @@ namespace WebAssignment.Controllers
         }
 
         [HttpPut("{id}/profile")]
+        [Authorize(Roles = "Instructor,Admin")]
         public IActionResult UpdateProfile(int id, [FromBody] InstructorProfileUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -179,6 +185,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 5 — Get Instructor Profile
         [HttpGet("{id}/profile")]
+        [Authorize]
         public IActionResult GetProfile(int id)
         {
             try
@@ -202,6 +209,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 6 — Get All Courses for an Instructor
         [HttpGet("{id}/courses")]
+        [Authorize]
         public IActionResult GetInstructorCourses(int id)
         {
             try

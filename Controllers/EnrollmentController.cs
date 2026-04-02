@@ -19,6 +19,7 @@ namespace WebAssignment.Controllers
         }
 
         [HttpPut("{studentId}/courses/{courseId}")]
+        [Authorize(Roles = "Instructor,Admin")]
         public IActionResult UpdateGrade(int studentId, int courseId, [FromBody] EnrollmentUpdateDto dto)
         {
             if (!ModelState.IsValid)

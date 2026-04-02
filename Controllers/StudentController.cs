@@ -20,6 +20,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 1 — Get All Students
         [HttpGet]
+        [Authorize(Roles = "Instructor,Admin")]
         public IActionResult GetAll()
         {
             var students = _service.GetAll();
@@ -34,6 +35,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 2 — Get Student by Id
         [HttpGet("{id}")]
+        [Authorize(Roles = "Student,Instructor,Admin")]
         public IActionResult GetById(int id)
         {
             try
@@ -55,6 +57,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 3 — Add Student
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public IActionResult Add([FromBody] StudentCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -80,6 +83,7 @@ namespace WebAssignment.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Student,Admin")]
         public IActionResult Update(int id, [FromBody] StudentUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -110,6 +114,7 @@ namespace WebAssignment.Controllers
         }
 
         [HttpPost("{studentId}/enroll/{courseId}")]
+        [Authorize(Roles = "Student")]
         public IActionResult EnrollInCourse(int studentId, int courseId)
         {
             try
@@ -129,6 +134,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 5 — Get All Courses for a Student
         [HttpGet("{id}/courses")]
+        [Authorize(Roles = "Student,Instructor,Admin")]
         public IActionResult GetStudentCourses(int id)
         {
             try
@@ -151,6 +157,7 @@ namespace WebAssignment.Controllers
         }
 
         [HttpGet("{studentId}/enrollments")]
+        [Authorize(Roles = "Student,Instructor,Admin")]
         public IActionResult GetEnrollments(int studentId)
         {
             try
@@ -183,6 +190,7 @@ namespace WebAssignment.Controllers
 
         // Endpoint 6 — Withdraw from Course
         [HttpDelete("{studentId}/withdraw/{courseId}")]
+        [Authorize(Roles = "Student")]
         public IActionResult WithdrawFromCourse(int studentId, int courseId)
         {
             try
