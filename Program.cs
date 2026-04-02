@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using WebAssignment;
+using WebAssignment.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,28 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
+
+// Seed admin user
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.MigrateAsync();
+    
+    // Check if admin user already exists
+    if (!await context.Users.AnyAsync(u => u.Username == "admin"))
+    {
+        var adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123");
+        var adminUser = new User
+        {
+            Username = "admin",
+            PasswordHash = adminPasswordHash,
+            Email = "admin@webassignment.com",
+            Role = WebAssignment.Models.UserRole.Admin
+        };
+        context.Users.Add(adminUser);
+        await context.SaveChangesAsync();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
