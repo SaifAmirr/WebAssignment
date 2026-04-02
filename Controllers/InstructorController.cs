@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
@@ -7,6 +8,7 @@ namespace WebAssignment.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class InstructorController : ControllerBase
     {
         private readonly IInstructorService _service;

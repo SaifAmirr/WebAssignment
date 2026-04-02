@@ -187,3 +187,12 @@ C:\Users\Saif\WebAssignment\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.Workspac
 C:\Users\Saif\WebAssignment\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\Users\Saif\WebAssignment\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\Users\Saif\WebAssignment\obj\Debug\net10.0\WebAssig.90E3F4AD.Up2Date
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\BCrypt.Net-Next.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll

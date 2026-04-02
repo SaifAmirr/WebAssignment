@@ -14,12 +14,16 @@ namespace WebAssignment
         public DbSet<Instructor> Instructors { get; set; }
         public DbSet<InstructorProfile> InstructorProfiles { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure One-to-One: Instructor -> InstructorProfile
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
             modelBuilder.Entity<InstructorProfile>()
                 .HasOne(ip => ip.Instructor)
                 .WithOne(i => i.InstructorProfile)

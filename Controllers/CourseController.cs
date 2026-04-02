@@ -94,47 +94,6 @@ namespace WebAssignment.Controllers
             return Ok(response);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] CourseUpdateDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Instructor instructor = _instructorService.GetById(dto.InstructorId);
-            
-            if (instructor == null)
-            {
-                return NotFound($"Instructor with Id {dto.InstructorId} not found");
-            }
-
-            try
-            {
-                var course = _service.GetById(id);
-                course.Title = dto.Title;
-                course.CreditHours = dto.CreditHours;
-                course.InstructorId = dto.InstructorId;
-                course.Instructor = instructor;
-
-                _service.Update(course);
-
-                var response = new CourseResponseDto
-                {
-                    Id = course.Id,
-                    Title = course.Title,
-                    CreditHours = course.CreditHours,
-                    InstructorId = course.InstructorId,
-                    InstructorName = course.Instructor?.Name
-                };
-                return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
         // Endpoint 4 — Get All Enrolled Students for a Course
         [HttpGet("{id}/enrollments")]
         public IActionResult GetCourseEnrollments(int id)
@@ -149,36 +108,6 @@ namespace WebAssignment.Controllers
                     GPA = s.GPA
                 }).ToList();
                 return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
-        [HttpGet("{id}/enrollments/details")]
-        public IActionResult GetEnrollmentDetails(int id)
-        {
-            try
-            {
-                var course = _service.GetById(id);
-                var students = _service.GetCourseEnrollments(id);
-                
-                var enrollmentDetails = new List<dynamic>();
-                foreach (var student in students)
-                {
-                    var detail = new
-                    {
-                        CourseId = id,
-                        CourseName = course.Title,
-                        StudentId = student.Id,
-                        StudentName = student.Name,
-                        StudentGPA = student.GPA
-                    };
-                    enrollmentDetails.Add(detail);
-                }
-
-                return Ok(enrollmentDetails);
             }
             catch (KeyNotFoundException ex)
             {

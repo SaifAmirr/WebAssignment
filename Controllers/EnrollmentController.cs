@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
 using WebAssignment.Models;
@@ -7,6 +8,7 @@ namespace WebAssignment.Controllers
 {
     [ApiController]
     [Route("api/enrollments")]
+    [Authorize]
     public class EnrollmentController : ControllerBase
     {
         private readonly IEnrollmentService _service;
