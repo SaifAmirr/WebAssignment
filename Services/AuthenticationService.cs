@@ -20,7 +20,9 @@ namespace WebAssignment.Services
 
         public async Task<User?> AuthenticateAsync(string username, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+            var user = await _context.Users
+                .Where(u => u.Username == username)
+                .FirstOrDefaultAsync();
             
             if (user == null)
                 return null;
@@ -68,7 +70,9 @@ namespace WebAssignment.Services
 
         public async Task<User?> CreateUserAsync(string username, string password, string email, UserRole role, int? studentId, int? instructorId)
         {
-            if (_context.Users.Any(u => u.Username == username))
+            if (await _context.Users
+                .Where(u => u.Username == username)
+                .AnyAsync())
                 return null;
 
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);

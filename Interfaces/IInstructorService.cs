@@ -5,13 +5,13 @@ namespace WebAssignment.Interfaces
 {
     public interface IInstructorService
     {
-        List<InstructorResponseDto> GetAll();
-        InstructorResponseDto GetById(int id);
-        void Add(Instructor instructor);
-        void Update(Instructor instructor);
-        void CreateOrUpdateProfile(int instructorId, InstructorProfile profile);
-        void UpdateProfile(InstructorProfile profile);
-        InstructorProfileResponseDto GetProfile(int instructorId);
-        List<CourseResponseDto> GetInstructorCourses(int instructorId);
+        Task<List<InstructorResponseDto>> GetAllAsync();
+        Task<InstructorResponseDto> GetByIdAsync(int id);
+        Task AddAsync(Instructor instructor);
+        Task UpdateAsync(Instructor instructor);
+        Task CreateOrUpdateProfileAsync(int instructorId, InstructorProfile profile);
+        Task UpdateProfileAsync(InstructorProfile profile);
+        Task<InstructorProfileResponseDto> GetProfileAsync(int instructorId);
+        Task<List<CourseResponseDto>> GetInstructorCoursesAsync(int instructorId);
     }
 }

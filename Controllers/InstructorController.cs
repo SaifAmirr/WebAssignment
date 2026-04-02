@@ -21,20 +21,20 @@ namespace WebAssignment.Controllers
         // Endpoint 1 — Get All Instructors
         [HttpGet]
         [Authorize]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var instructors = _service.GetAll();
+            var instructors = await _service.GetAllAsync();
             return Ok(instructors);
         }
 
         // Endpoint 2 — Get Instructor by Id
         [HttpGet("{id}")]
         [Authorize]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                var instructor = _service.GetById(id);
+                var instructor = await _service.GetByIdAsync(id);
                 return Ok(instructor);
             }
             catch (KeyNotFoundException ex)
@@ -46,7 +46,7 @@ namespace WebAssignment.Controllers
         // Endpoint 3 — Add Instructor
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public IActionResult Add([FromBody] InstructorCreateDto dto)
+        public async Task<IActionResult> Add([FromBody] InstructorCreateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -60,15 +60,15 @@ namespace WebAssignment.Controllers
                 Email = dto.Email
             };
 
-            _service.Add(instructor);
+            await _service.AddAsync(instructor);
             
-            var response = _service.GetById(instructor.Id);
+            var response = await _service.GetByIdAsync(instructor.Id);
             return Ok(response);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Instructor,Admin")]
-        public IActionResult Update(int id, [FromBody] InstructorUpdateDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] InstructorUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -85,9 +85,9 @@ namespace WebAssignment.Controllers
                     Email = dto.Email
                 };
 
-                _service.Update(instructor);
+                await _service.UpdateAsync(instructor);
 
-                var updated = _service.GetById(id);
+                var updated = await _service.GetByIdAsync(id);
                 return Ok(updated);
             }
             catch (KeyNotFoundException ex)
@@ -99,7 +99,7 @@ namespace WebAssignment.Controllers
         // Endpoint 4 — Create or Update Instructor Profile
         [HttpPost("{id}/profile")]
         [Authorize(Roles = "Instructor,Admin")]
-        public IActionResult CreateOrUpdateProfile(int id, [FromBody] InstructorProfileCreateDto dto)
+        public async Task<IActionResult> CreateOrUpdateProfile(int id, [FromBody] InstructorProfileCreateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -116,7 +116,7 @@ namespace WebAssignment.Controllers
                     InstructorId = id
                 };
 
-                _service.CreateOrUpdateProfile(id, profile);
+                await _service.CreateOrUpdateProfileAsync(id, profile);
                 return Ok("Profile created or updated successfully");
             }
             catch (KeyNotFoundException ex)
@@ -127,7 +127,7 @@ namespace WebAssignment.Controllers
 
         [HttpPut("{id}/profile")]
         [Authorize(Roles = "Instructor,Admin")]
-        public IActionResult UpdateProfile(int id, [FromBody] InstructorProfileUpdateDto dto)
+        public async Task<IActionResult> UpdateProfile(int id, [FromBody] InstructorProfileUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -136,7 +136,7 @@ namespace WebAssignment.Controllers
 
             try
             {
-                var profileDto = _service.GetProfile(id);
+                var profileDto = await _service.GetProfileAsync(id);
                 var profile = new InstructorProfile
                 {
                     Id = profileDto.Id,
@@ -146,9 +146,9 @@ namespace WebAssignment.Controllers
                     InstructorId = profileDto.InstructorId
                 };
 
-                _service.UpdateProfile(profile);
+                await _service.UpdateProfileAsync(profile);
 
-                var updated = _service.GetProfile(id);
+                var updated = await _service.GetProfileAsync(id);
                 return Ok(updated);
             }
             catch (KeyNotFoundException ex)
@@ -160,11 +160,11 @@ namespace WebAssignment.Controllers
         // Endpoint 5 — Get Instructor Profile
         [HttpGet("{id}/profile")]
         [Authorize]
-        public IActionResult GetProfile(int id)
+        public async Task<IActionResult> GetProfile(int id)
         {
             try
             {
-                var profile = _service.GetProfile(id);
+                var profile = await _service.GetProfileAsync(id);
                 return Ok(profile);
             }
             catch (KeyNotFoundException ex)
@@ -176,11 +176,11 @@ namespace WebAssignment.Controllers
         // Endpoint 6 — Get All Courses for an Instructor
         [HttpGet("{id}/courses")]
         [Authorize]
-        public IActionResult GetInstructorCourses(int id)
+        public async Task<IActionResult> GetInstructorCourses(int id)
         {
             try
             {
-                var courses = _service.GetInstructorCourses(id);
+                var courses = await _service.GetInstructorCoursesAsync(id);
                 return Ok(courses);
             }
             catch (KeyNotFoundException ex)

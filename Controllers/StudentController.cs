@@ -21,20 +21,20 @@ namespace WebAssignment.Controllers
         // Endpoint 1 — Get All Students
         [HttpGet]
         [Authorize(Roles = "Instructor,Admin")]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var students = _service.GetAll();
+            var students = await _service.GetAllAsync();
             return Ok(students);
         }
 
         // Endpoint 2 — Get Student by Id
         [HttpGet("{id}")]
         [Authorize(Roles = "Student,Instructor,Admin")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                var student = _service.GetById(id);
+                var student = await _service.GetByIdAsync(id);
                 return Ok(student);
             }
             catch (KeyNotFoundException ex)
@@ -46,7 +46,7 @@ namespace WebAssignment.Controllers
         // Endpoint 3 — Add Student
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public IActionResult Add([FromBody] StudentCreateDto dto)
+        public async Task<IActionResult> Add([FromBody] StudentCreateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -59,7 +59,7 @@ namespace WebAssignment.Controllers
                 GPA = dto.GPA
             };
 
-            _service.Add(student);
+            await _service.AddAsync(student);
             
             var response = new StudentResponseDto
             {
@@ -72,7 +72,7 @@ namespace WebAssignment.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Student,Admin")]
-        public IActionResult Update(int id, [FromBody] StudentUpdateDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] StudentUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -88,9 +88,9 @@ namespace WebAssignment.Controllers
                     GPA = dto.GPA
                 };
 
-                _service.Update(student);
+                await _service.UpdateAsync(student);
 
-                var updated = _service.GetById(id);
+                var updated = await _service.GetByIdAsync(id);
                 return Ok(updated);
             }
             catch (KeyNotFoundException ex)
@@ -101,11 +101,11 @@ namespace WebAssignment.Controllers
 
         [HttpPost("{studentId}/enroll/{courseId}")]
         [Authorize(Roles = "Student")]
-        public IActionResult EnrollInCourse(int studentId, int courseId)
+        public async Task<IActionResult> EnrollInCourse(int studentId, int courseId)
         {
             try
             {
-                _service.EnrollStudentInCourse(studentId, courseId);
+                await _service.EnrollStudentInCourseAsync(studentId, courseId);
                 return Ok("Student enrolled successfully");
             }
             catch (KeyNotFoundException ex)
@@ -121,11 +121,11 @@ namespace WebAssignment.Controllers
         // Endpoint 5 — Get All Courses for a Student
         [HttpGet("{id}/courses")]
         [Authorize(Roles = "Student,Instructor,Admin")]
-        public IActionResult GetStudentCourses(int id)
+        public async Task<IActionResult> GetStudentCourses(int id)
         {
             try
             {
-                var courses = _service.GetStudentCourses(id);
+                var courses = await _service.GetStudentCoursesAsync(id);
                 return Ok(courses);
             }
             catch (KeyNotFoundException ex)
@@ -136,12 +136,12 @@ namespace WebAssignment.Controllers
 
         [HttpGet("{studentId}/enrollments")]
         [Authorize(Roles = "Student,Instructor,Admin")]
-        public IActionResult GetEnrollments(int studentId)
+        public async Task<IActionResult> GetEnrollments(int studentId)
         {
             try
             {
-                var courses = _service.GetStudentCourses(studentId);
-                var student = _service.GetById(studentId);
+                var courses = await _service.GetStudentCoursesAsync(studentId);
+                var student = await _service.GetByIdAsync(studentId);
                 
                 var enrollmentData = courses.Select(c => new
                 {
@@ -164,11 +164,11 @@ namespace WebAssignment.Controllers
         // Endpoint 6 — Withdraw from Course
         [HttpDelete("{studentId}/withdraw/{courseId}")]
         [Authorize(Roles = "Student")]
-        public IActionResult WithdrawFromCourse(int studentId, int courseId)
+        public async Task<IActionResult> WithdrawFromCourse(int studentId, int courseId)
         {
             try
             {
-                _service.WithdrawFromCourse(studentId, courseId);
+                await _service.WithdrawFromCourseAsync(studentId, courseId);
                 return Ok("Student withdrawn successfully");
             }
             catch (KeyNotFoundException ex)

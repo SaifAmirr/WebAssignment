@@ -5,9 +5,9 @@ namespace WebAssignment.Interfaces
 {
     public interface IEnrollmentService
     {
-        EnrollmentResponseDto GetEnrollment(int studentId, int courseId);
-        void UpdateEnrollment(Enrollment enrollment);
-        List<EnrollmentResponseDto> GetStudentEnrollments(int studentId);
-        List<EnrollmentResponseDto> GetCourseEnrollments(int courseId);
+        Task<EnrollmentResponseDto> GetEnrollmentAsync(int studentId, int courseId);
+        Task UpdateEnrollmentAsync(Enrollment enrollment);
+        Task<List<EnrollmentResponseDto>> GetStudentEnrollmentsAsync(int studentId);
+        Task<List<EnrollmentResponseDto>> GetCourseEnrollmentsAsync(int courseId);
     }
 }

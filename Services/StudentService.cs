@@ -16,7 +16,7 @@ namespace WebAssignment.Services
             _context = context;
         }
 
-        public List<StudentResponseDto> GetAll() => _context.Students
+        public async Task<List<StudentResponseDto>> GetAllAsync() => await _context.Students
             .AsNoTracking()
             .Select(s => new StudentResponseDto
             {
@@ -24,11 +24,11 @@ namespace WebAssignment.Services
                 Name = s.Name,
                 GPA = s.GPA
             })
-            .ToList();
+            .ToListAsync();
 
-        public StudentResponseDto GetById(int id)
+        public async Task<StudentResponseDto> GetByIdAsync(int id)
         {
-            return _context.Students
+            return await _context.Students
                 .AsNoTracking()
                 .Where(s => s.Id == id)
                 .Select(s => new StudentResponseDto
@@ -37,33 +37,35 @@ namespace WebAssignment.Services
                     Name = s.Name,
                     GPA = s.GPA
                 })
-                .FirstOrDefault() ?? throw new KeyNotFoundException($"Student with id {id} not found.");
+                .FirstOrDefaultAsync() ?? throw new KeyNotFoundException($"Student with id {id} not found.");
         }
 
-        private Student GetStudentEntity(int id)
+        private async Task<Student> GetStudentEntityAsync(int id)
         {
-            return _context.Students.FirstOrDefault(s => s.Id == id) ?? throw new KeyNotFoundException($"Student with id {id} not found.");
+            return await _context.Students
+                .Where(s => s.Id == id)
+                .FirstOrDefaultAsync() ?? throw new KeyNotFoundException($"Student with id {id} not found.");
         }
 
-        public void Add(Student student)
+        public async Task AddAsync(Student student)
         {
             _context.Students.Add(student);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(Student student)
+        public async Task UpdateAsync(Student student)
         {
             _context.Students.Update(student);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void EnrollStudentInCourse(int studentId, int courseId)
+        public async Task EnrollStudentInCourseAsync(int studentId, int courseId)
         {
-            var student = GetStudentEntity(studentId);
-            var course = _context.Courses.FirstOrDefault(c => c.Id == courseId) ?? throw new KeyNotFoundException($"Course with id {courseId} not found.");
+            var student = await GetStudentEntityAsync(studentId);
+            var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId) ?? throw new KeyNotFoundException($"Course with id {courseId} not found.");
 
-            var existingEnrollment = _context.Enrollments
-                .FirstOrDefault(e => e.StudentId == studentId && e.CourseId == courseId);
+            var existingEnrollment = await _context.Enrollments
+                .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
 
             if (existingEnrollment != null)
                 throw new InvalidOperationException($"Student is already enrolled in this course.");
@@ -76,14 +78,14 @@ namespace WebAssignment.Services
             };
 
             _context.Enrollments.Add(enrollment);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public List<CourseResponseDto> GetStudentCourses(int studentId)
+        public async Task<List<CourseResponseDto>> GetStudentCoursesAsync(int studentId)
         {
-            var student = GetStudentEntity(studentId);
+            var student = await GetStudentEntityAsync(studentId);
             
-            return _context.Enrollments
+            return await _context.Enrollments
                 .Where(e => e.StudentId == studentId)
                 .Include(e => e.Course)
                 .ThenInclude(c => c!.Instructor)
@@ -96,19 +98,19 @@ namespace WebAssignment.Services
                     InstructorId = e.Course!.InstructorId,
                     InstructorName = e.Course!.Instructor!.Name
                 })
-                .ToList();
+                .ToListAsync();
         }
 
-        public void WithdrawFromCourse(int studentId, int courseId)
+        public async Task WithdrawFromCourseAsync(int studentId, int courseId)
         {
-            var enrollment = _context.Enrollments
-                .FirstOrDefault(e => e.StudentId == studentId && e.CourseId == courseId);
+            var enrollment = await _context.Enrollments
+                .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
 
             if (enrollment == null)
                 throw new KeyNotFoundException($"Enrollment record not found for student {studentId} in course {courseId}.");
 
             _context.Enrollments.Remove(enrollment);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace WebAssignment.Controllers
 
         [HttpPut("{studentId}/courses/{courseId}")]
         [Authorize(Roles = "Instructor,Admin")]
-        public IActionResult UpdateGrade(int studentId, int courseId, [FromBody] EnrollmentUpdateDto dto)
+        public async Task<IActionResult> UpdateGrade(int studentId, int courseId, [FromBody] EnrollmentUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -29,7 +29,7 @@ namespace WebAssignment.Controllers
 
             try
             {
-                var enrollmentDto = _service.GetEnrollment(studentId, courseId);
+                var enrollmentDto = await _service.GetEnrollmentAsync(studentId, courseId);
                 var enrollment = new Enrollment
                 {
                     Id = enrollmentDto.Id,
@@ -39,9 +39,9 @@ namespace WebAssignment.Controllers
                     EnrollmentDate = enrollmentDto.EnrollmentDate
                 };
 
-                _service.UpdateEnrollment(enrollment);
+                await _service.UpdateEnrollmentAsync(enrollment);
 
-                var response = _service.GetEnrollment(studentId, courseId);
+                var response = await _service.GetEnrollmentAsync(studentId, courseId);
                 return Ok(response);
             }
             catch (KeyNotFoundException ex)

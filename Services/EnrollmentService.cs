@@ -14,9 +14,9 @@ namespace WebAssignment.Services
             _context = context;
         }
 
-        public EnrollmentResponseDto GetEnrollment(int studentId, int courseId)
+        public async Task<EnrollmentResponseDto> GetEnrollmentAsync(int studentId, int courseId)
         {
-            return _context.Enrollments
+            return await _context.Enrollments
                 .AsNoTracking()
                 .Where(e => e.StudentId == studentId && e.CourseId == courseId)
                 .Select(e => new EnrollmentResponseDto
@@ -27,19 +27,19 @@ namespace WebAssignment.Services
                     Grade = e.Grade,
                     EnrollmentDate = e.EnrollmentDate
                 })
-                .FirstOrDefault()
+                .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException($"Enrollment for student {studentId} in course {courseId} not found.");
         }
 
-        public void UpdateEnrollment(Enrollment enrollment)
+        public async Task UpdateEnrollmentAsync(Enrollment enrollment)
         {
             _context.Enrollments.Update(enrollment);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public List<EnrollmentResponseDto> GetStudentEnrollments(int studentId)
+        public async Task<List<EnrollmentResponseDto>> GetStudentEnrollmentsAsync(int studentId)
         {
-            return _context.Enrollments
+            return await _context.Enrollments
                 .AsNoTracking()
                 .Where(e => e.StudentId == studentId)
                 .Select(e => new EnrollmentResponseDto
@@ -50,12 +50,12 @@ namespace WebAssignment.Services
                     Grade = e.Grade,
                     EnrollmentDate = e.EnrollmentDate
                 })
-                .ToList();
+                .ToListAsync();
         }
 
-        public List<EnrollmentResponseDto> GetCourseEnrollments(int courseId)
+        public async Task<List<EnrollmentResponseDto>> GetCourseEnrollmentsAsync(int courseId)
         {
-            return _context.Enrollments
+            return await _context.Enrollments
                 .AsNoTracking()
                 .Where(e => e.CourseId == courseId)
                 .Select(e => new EnrollmentResponseDto
@@ -66,15 +66,15 @@ namespace WebAssignment.Services
                     Grade = e.Grade,
                     EnrollmentDate = e.EnrollmentDate
                 })
-                .ToList();
+                .ToListAsync();
         }
 
-        private Enrollment GetEnrollmentEntity(int studentId, int courseId)
+        private async Task<Enrollment> GetEnrollmentEntityAsync(int studentId, int courseId)
         {
-            return _context.Enrollments
+            return await _context.Enrollments
                 .Include(e => e.Student)
                 .Include(e => e.Course)
-                .FirstOrDefault(e => e.StudentId == studentId && e.CourseId == courseId)
+                .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId)
                 ?? throw new KeyNotFoundException($"Enrollment for student {studentId} in course {courseId} not found.");
         }
     }

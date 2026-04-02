@@ -22,20 +22,20 @@ namespace WebAssignment.Controllers
         // Endpoint 1 — Get All Courses
         [HttpGet]
         [Authorize]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var courses = _service.GetAll();
+            var courses = await _service.GetAllAsync();
             return Ok(courses);
         }
 
         // Endpoint 2 — Get Course by Id
         [HttpGet("{id}")]
         [Authorize]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                var course = _service.GetById(id);
+                var course = await _service.GetByIdAsync(id);
                 return Ok(course);
             }
             catch (KeyNotFoundException ex)
@@ -46,7 +46,7 @@ namespace WebAssignment.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Instructor")]
-        public IActionResult Update(int id, [FromBody] CourseUpdateDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] CourseUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +58,7 @@ namespace WebAssignment.Controllers
                 // Validate instructor exists
                 try
                 {
-                    _instructorService.GetById(dto.InstructorId);
+                    await _instructorService.GetByIdAsync(dto.InstructorId);
                 }
                 catch (KeyNotFoundException)
                 {
@@ -73,9 +73,9 @@ namespace WebAssignment.Controllers
                     InstructorId = dto.InstructorId
                 };
 
-                _service.Update(course);
+                await _service.UpdateAsync(course);
 
-                var updated = _service.GetById(id);
+                var updated = await _service.GetByIdAsync(id);
                 return Ok(updated);
             }
             catch (KeyNotFoundException ex)
@@ -87,7 +87,7 @@ namespace WebAssignment.Controllers
         // Endpoint 3 — Add Course
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public IActionResult Add([FromBody] CourseCreateDto dto)
+        public async Task<IActionResult> Add([FromBody] CourseCreateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -97,7 +97,7 @@ namespace WebAssignment.Controllers
             // Validate instructor exists by trying to fetch it
             try
             {
-                _instructorService.GetById(dto.InstructorId);
+                await _instructorService.GetByIdAsync(dto.InstructorId);
             }
             catch (KeyNotFoundException)
             {
@@ -111,20 +111,20 @@ namespace WebAssignment.Controllers
                 InstructorId = dto.InstructorId
             };
 
-            _service.Add(course);
+            await _service.AddAsync(course);
             
-            var response = _service.GetById(course.Id);
+            var response = await _service.GetByIdAsync(course.Id);
             return Ok(response);
         }
 
         // Endpoint 4 — Get All Enrolled Students for a Course
         [HttpGet("{id}/enrollments")]
         [Authorize(Roles = "Instructor,Admin")]
-        public IActionResult GetCourseEnrollments(int id)
+        public async Task<IActionResult> GetCourseEnrollments(int id)
         {
             try
             {
-                var students = _service.GetCourseEnrollments(id);
+                var students = await _service.GetCourseEnrollmentsAsync(id);
                 return Ok(students);
             }
             catch (KeyNotFoundException ex)
@@ -136,11 +136,11 @@ namespace WebAssignment.Controllers
         // Endpoint 5 — Assign Instructor to Course
         [HttpPut("{courseId}/instructor/{instructorId}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult AssignInstructor(int courseId, int instructorId)
+        public async Task<IActionResult> AssignInstructor(int courseId, int instructorId)
         {
             try
             {
-                _service.AssignInstructor(courseId, instructorId);
+                await _service.AssignInstructorAsync(courseId, instructorId);
                 return Ok("Instructor assigned successfully");
             }
             catch (KeyNotFoundException ex)
