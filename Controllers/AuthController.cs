@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebAssignment.DTOs;
 using WebAssignment.Interfaces;
+using WebAssignment.Models;
 
 namespace WebAssignment.Controllers
 {
@@ -38,6 +39,36 @@ namespace WebAssignment.Controllers
                 Token = token,
                 Username = user.Username,
                 ExpiresAt = expiresAt
+            };
+
+            return Ok(response);
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!Enum.TryParse<UserRole>(dto.Role, true, out var role))
+            {
+                return BadRequest("Invalid role. Must be Student, Instructor, or Admin.");
+            }
+
+            var user = await _authService.CreateUserAsync(dto.Username, dto.Password, dto.Email, role, null, null);
+
+            if (user == null)
+            {
+                return BadRequest("Username already exists.");
+            }
+
+            var response = new LoginResponseDto
+            {
+                Token = _authService.GenerateJwtToken(user),
+                Username = user.Username,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(int.Parse("60"))
             };
 
             return Ok(response);

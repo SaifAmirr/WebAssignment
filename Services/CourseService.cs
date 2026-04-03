@@ -57,6 +57,13 @@ namespace WebAssignment.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteAsync(int id)
+        {
+            var course = await GetCourseEntityAsync(id);
+            _context.Courses.Remove(course);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<List<StudentResponseDto>> GetCourseEnrollmentsAsync(int courseId)
         {
             var course = await GetCourseEntityAsync(courseId);

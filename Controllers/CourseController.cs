@@ -130,5 +130,21 @@ namespace WebAssignment.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        // Endpoint 6 — Delete Course
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _service.DeleteAsync(id);
+                return Ok("Course deleted successfully");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
     }
 }
