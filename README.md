@@ -310,26 +310,4 @@ WebAssignment/
 
 ---
 
-## Known Limitations & Future Improvements
 
-⚠️ **Current Issues:**
-- Enrollment is Admin-only (should allow Students to self-register)
-- No course capacity limits
-- No prerequisite validation
-- No enrollment deadlines
-- No duplicate enrollment prevention
-
-📋 **Recommended Enhancements:**
-1. Allow student self-enrollment: `POST /api/courses/{courseId}/enroll`
-2. Add course capacity: Add `MaxCapacity` to Course model
-3. Add prerequisites: Add prerequisite validation logic
-4. Implement enrollment deadlines: Add `EnrollmentDeadlineDate` to Course
-5. Add unique constraint: Database constraint on (StudentId, CourseId)
-
----
-
-## License
-This project is private and for educational purposes.
-
-## Support
-For issues or questions, contact the development team.
