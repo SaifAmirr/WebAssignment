@@ -196,3 +196,7 @@ C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.
 C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\Saif\WebAssignment\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Saif\WebAssignment\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\client\package-lock.json
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\client\package.json
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\client\client\package-lock.json
+C:\Users\Saif\WebAssignment\bin\Debug\net10.0\client\client\package.json

