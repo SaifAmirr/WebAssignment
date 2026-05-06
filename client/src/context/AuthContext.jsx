@@ -1,74 +1,65 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
-import { login as loginApi, register as registerApi } from '../services/authService';
-import { decodeToken, getRole, getStudentId, getInstructorId } from '../utils/jwt';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { login as loginApi, register as registerApi, getMe, logoutApi } from '../services/authService';
 
 const AuthContext = createContext(null);
 
-function buildUserFromToken(token, username) {
-  const payload = decodeToken(token);
-  return {
-    username,
-    role: getRole(payload),
-    studentId: getStudentId(payload),
-    instructorId: getInstructorId(payload),
-  };
-}
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('token'));
+  const [user, setUser]       = useState(null);
+  const [loading, setLoading] = useState(true); // true while checking session on mount
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser  = localStorage.getItem('user');
-    if (storedToken && storedUser) {
-      const base = JSON.parse(storedUser);
-      const u = buildUserFromToken(storedToken, base.username);
-      // Restore manually linked student record if the JWT has no StudentId claim
-      if (!u.studentId && base.linkedStudentId) u.studentId = base.linkedStudentId;
-      setUser(u);
+  const studentKey    = (username) => `linkedStudentId_${username}`;
+  const instructorKey = (username) => `linkedInstructorId_${username}`;
+
+  // Apply any locally-stored linked IDs that the backend doesn't know about yet
+  const applyLinkedIds = (u) => {
+    if (!u.studentId) {
+      const saved = localStorage.getItem(studentKey(u.username));
+      if (saved) u.studentId = Number(saved);
     }
-  }, []);
-
-  const _persist = (token, username, extra = {}) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify({ username, ...extra }));
+    if (!u.instructorId) {
+      const saved = localStorage.getItem(instructorKey(u.username));
+      if (saved) u.instructorId = Number(saved);
+    }
+    return u;
   };
+
+  // On mount: ask the backend if the cookie is still valid
+  useEffect(() => {
+    getMe()
+      .then((res) => setUser(applyLinkedIds({ ...res.data })))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
 
   const login = async (credentials) => {
     const res = await loginApi(credentials);
-    const { token, username } = res.data;
-    _persist(token, username);
-    setToken(token);
-    setUser(buildUserFromToken(token, username));
+    setUser(applyLinkedIds({ ...res.data }));
     return res.data;
   };
 
   const register = async (data) => {
     const res = await registerApi(data);
-    const { token, username } = res.data;
-    _persist(token, username);
-    setToken(token);
-    setUser(buildUserFromToken(token, username));
-    return res.data;
+    return res.data; // no auto-login; caller handles redirect
   };
 
-  // Called when a student manually picks their student record from the list
   const linkStudentId = (studentId) => {
-    const stored = JSON.parse(localStorage.getItem('user') || '{}');
-    localStorage.setItem('user', JSON.stringify({ ...stored, linkedStudentId: studentId }));
+    localStorage.setItem(studentKey(user.username), studentId);
     setUser((prev) => ({ ...prev, studentId }));
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
+  const linkInstructorId = (instructorId) => {
+    localStorage.setItem(instructorKey(user.username), instructorId);
+    setUser((prev) => ({ ...prev, instructorId }));
+  };
+
+  const logout = async () => {
+    await logoutApi().catch(() => {});
     setUser(null);
+    // linkedStudentId_<username> intentionally kept so the link is restored on next login
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, linkStudentId }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, linkStudentId, linkInstructorId }}>
       {children}
     </AuthContext.Provider>
   );

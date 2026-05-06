@@ -11,7 +11,6 @@ export default function CourseEdit() {
   const { user } = useAuth();
   const isAdmin      = user?.role === 'Admin';
   const isInstructor = user?.role === 'Instructor';
-  const canEdit = isAdmin || isInstructor;
 
   const [form, setForm]             = useState({ title: '', creditHours: 1, instructorId: '' });
   const [instructors, setInstructors] = useState([]);
@@ -66,7 +65,7 @@ export default function CourseEdit() {
     <div className="container mt-4">
       <div className="d-flex align-items-center mb-4">
         <Link to="/courses" className="btn btn-outline-secondary btn-sm me-3">← Back</Link>
-        <h2 className="fw-bold mb-0">{canEdit ? 'Edit Course' : 'Course Details'}</h2>
+        <h2 className="fw-bold mb-0">{isAdmin ? 'Edit Course' : 'Course Details'}</h2>
       </div>
       <div className="row g-4">
         <div className="col-md-6">
@@ -75,7 +74,7 @@ export default function CourseEdit() {
               {error   && <div className="alert alert-danger">{error}</div>}
               {success && <div className="alert alert-success">{success}</div>}
 
-              {canEdit ? (
+              {isAdmin ? (
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <label className="form-label">Course Title</label>

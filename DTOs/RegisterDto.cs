@@ -17,7 +17,6 @@ namespace WebAssignment.DTOs
         [MaxLength(100)]
         public string Password { get; set; } = string.Empty;
 
-        [Required]
-        public string Role { get; set; } = string.Empty;
+        public string Role { get; set; } = "Student";
     }
 }

@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllCourses, deleteCourse } from '../services/courseService';
+import { getInstructorCourses } from '../services/instructorService';
 import { useAuth } from '../context/AuthContext';
 
 export default function CoursesPage() {
@@ -14,11 +15,19 @@ export default function CoursesPage() {
   const [actionMsg, setActionMsg] = useState('');
 
   useEffect(() => {
-    getAllCourses()
-      .then((res) => setCourses(res.data))
-      .catch(() => setError('Failed to load courses.'))
-      .finally(() => setLoading(false));
-  }, []);
+    if (isInstructor) {
+      if (!user?.instructorId) { setLoading(false); return; }
+      getInstructorCourses(user.instructorId)
+        .then((res) => setCourses(res.data))
+        .catch(() => setError('Failed to load your courses.'))
+        .finally(() => setLoading(false));
+    } else {
+      getAllCourses()
+        .then((res) => setCourses(res.data))
+        .catch(() => setError('Failed to load courses.'))
+        .finally(() => setLoading(false));
+    }
+  }, [isInstructor, user?.instructorId]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this course?')) return;
@@ -37,10 +46,18 @@ export default function CoursesPage() {
     </div>
   );
 
+  if (isInstructor && !user?.instructorId) return (
+    <div className="container mt-4">
+      <div className="alert alert-warning">
+        Your account is not linked to an instructor record. Contact your admin.
+      </div>
+    </div>
+  );
+
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold mb-0">Courses</h2>
+        <h2 className="fw-bold mb-0">{isInstructor ? 'My Courses' : 'Courses'}</h2>
         {isAdmin && <Link to="/courses/new" className="btn btn-primary">+ Add Course</Link>}
       </div>
 
@@ -52,7 +69,9 @@ export default function CoursesPage() {
       </div>}
 
       {courses.length === 0 ? (
-        <div className="alert alert-info">No courses available.</div>
+        <div className="alert alert-info">
+          {isInstructor ? 'No courses have been assigned to you yet.' : 'No courses available.'}
+        </div>
       ) : (
         <div className="table-responsive">
           <table className="table table-hover align-middle">
@@ -61,8 +80,8 @@ export default function CoursesPage() {
                 <th>#</th>
                 <th>Title</th>
                 <th>Credit Hours</th>
-                <th>Instructor</th>
-                {(isAdmin || isInstructor) && <th>Actions</th>}
+                {!isInstructor && <th>Instructor</th>}
+                {isAdmin && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -71,22 +90,20 @@ export default function CoursesPage() {
                   <td>{course.id}</td>
                   <td className="fw-semibold">{course.title}</td>
                   <td>{course.creditHours}</td>
-                  <td>{course.instructorName || <span className="text-muted">Unassigned</span>}</td>
-                  {(isAdmin || isInstructor) && (
+                  {!isInstructor && (
+                    <td>{course.instructorName || <span className="text-muted">Unassigned</span>}</td>
+                  )}
+                  {isAdmin && (
                     <td>
-                      {(isAdmin || isInstructor) && (
-                        <Link to={`/courses/${course.id}`} className="btn btn-sm btn-outline-primary me-2">
-                          Edit
-                        </Link>
-                      )}
-                      {isAdmin && (
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(course.id)}
-                        >
-                          Delete
-                        </button>
-                      )}
+                      <Link to={`/courses/${course.id}`} className="btn btn-sm btn-outline-primary me-2">
+                        Edit
+                      </Link>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDelete(course.id)}
+                      >
+                        Delete
+                      </button>
                     </td>
                   )}
                 </tr>

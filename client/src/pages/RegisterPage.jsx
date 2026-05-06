@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -6,12 +6,11 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: '', email: '', password: '', role: 'Student' });
-  const [error, setError] = useState('');
+  const [error, setError]     = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +18,8 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(form);
-      navigate('/');
+      setSuccess('Account created successfully! Redirecting to login…');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       setError(err.response?.data || 'Registration failed. Please try again.');
     } finally {
@@ -34,7 +34,8 @@ export default function RegisterPage() {
           <div className="card shadow-sm border-0">
             <div className="card-body p-4">
               <h3 className="card-title text-center mb-4 fw-bold">Register</h3>
-              {error && <div className="alert alert-danger">{error}</div>}
+              {error   && <div className="alert alert-danger">{error}</div>}
+              {success && <div className="alert alert-success">{success}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label className="form-label">Username</label>
@@ -46,6 +47,7 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     maxLength={100}
+                    disabled={!!success}
                   />
                 </div>
                 <div className="mb-3">
@@ -57,6 +59,7 @@ export default function RegisterPage() {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    disabled={!!success}
                   />
                 </div>
                 <div className="mb-3">
@@ -69,28 +72,16 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     minLength={6}
+                    disabled={!!success}
                   />
                   <div className="form-text">Minimum 6 characters.</div>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Role</label>
-                  <select
-                    className="form-select"
-                    name="role"
-                    value={form.role}
-                    onChange={handleChange}
-                  >
-                    <option value="Student">Student</option>
-                    <option value="Instructor">Instructor</option>
-                    <option value="Admin">Admin</option>
-                  </select>
                 </div>
                 <button
                   type="submit"
                   className="btn btn-primary w-100"
-                  disabled={loading}
+                  disabled={loading || !!success}
                 >
-                  {loading ? 'Registering...' : 'Register'}
+                  {loading ? 'Registering…' : 'Register'}
                 </button>
               </form>
               <p className="text-center mt-3 mb-0">

@@ -22,6 +22,7 @@ import InstructorDetail from "./pages/InstructorDetail";
 
 import EnrollmentsPage from "./pages/EnrollmentsPage";
 import EnrollmentCreate from "./pages/EnrollmentCreate";
+import UsersPage from "./pages/UsersPage";
 
 function App() {
   return (
@@ -48,6 +49,8 @@ function App() {
 
             <Route path="/enrollments" element={<ProtectedRoute><EnrollmentsPage /></ProtectedRoute>} />
             <Route path="/enrollments/new" element={<ProtectedRoute roles={['Admin']}><EnrollmentCreate /></ProtectedRoute>} />
+
+            <Route path="/users" element={<ProtectedRoute roles={['Admin']}><UsersPage /></ProtectedRoute>} />
           </Routes>
         </div>
       </AuthProvider>

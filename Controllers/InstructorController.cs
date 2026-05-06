@@ -12,10 +12,12 @@ namespace WebAssignment.Controllers
     public class InstructorController : ControllerBase
     {
         private readonly IInstructorService _service;
+        private readonly IAuthenticationService _authService;
 
-        public InstructorController(IInstructorService service)
+        public InstructorController(IInstructorService service, IAuthenticationService authService)
         {
             _service = service;
+            _authService = authService;
         }
 
         // Endpoint 1 — Get All Instructors
@@ -59,7 +61,10 @@ namespace WebAssignment.Controllers
             };
 
             await _service.AddAsync(instructor);
-            
+
+            if (dto.UserId.HasValue)
+                await _authService.LinkUserToInstructorAsync(dto.UserId.Value, instructor.Id);
+
             var response = await _service.GetByIdAsync(instructor.Id);
             return Ok(response);
         }
@@ -69,9 +74,7 @@ namespace WebAssignment.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] InstructorUpdateDto dto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             try
             {
@@ -85,8 +88,26 @@ namespace WebAssignment.Controllers
 
                 await _service.UpdateAsync(instructor);
 
+                if (dto.UserId.HasValue)
+                    await _authService.LinkUserToInstructorAsync(dto.UserId.Value, id);
+
                 var updated = await _service.GetByIdAsync(id);
                 return Ok(updated);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _service.DeleteAsync(id);
+                return NoContent();
             }
             catch (KeyNotFoundException ex)
             {

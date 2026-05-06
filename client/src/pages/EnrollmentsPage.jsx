@@ -133,12 +133,10 @@ function InstructorEnrollmentView({ user }) {
   const [msg, setMsg]                 = useState('');
 
   useEffect(() => {
-    const request = user?.instructorId
-      ? getInstructorCourses(user.instructorId)
-      : getAllCourses();
-    request
+    if (!user?.instructorId) return;
+    getInstructorCourses(user.instructorId)
       .then((r) => setCourses(r.data))
-      .catch(() => setError('Failed to load courses.'));
+      .catch(() => setError('Failed to load your courses.'));
   }, [user?.instructorId]);
 
   const loadEnrollments = async (courseId) => {
@@ -175,74 +173,83 @@ function InstructorEnrollmentView({ user }) {
 
   return (
     <>
-      <h5 className="text-muted mb-3">Manage Course Enrollments</h5>
+      <h5 className="text-muted mb-3">Grade Students</h5>
       {error && <div className="alert alert-danger">{error}</div>}
       {msg   && <div className="alert alert-success">{msg}</div>}
 
-      <div className="card shadow-sm border-0 mb-4">
-        <div className="card-body">
-          <label className="form-label fw-semibold">Select a course</label>
-          <select className="form-select" value={selectedCourse} onChange={handleCourseChange}>
-            <option value="">-- Select a Course --</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>{c.title}</option>
-            ))}
-          </select>
+      {!user?.instructorId ? (
+        <div className="alert alert-warning">
+          You have not linked your instructor record yet. Go to your{' '}
+          <a href="/" className="alert-link">dashboard</a> to select your name.
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="card shadow-sm border-0 mb-4">
+            <div className="card-body">
+              <label className="form-label fw-semibold">Select one of your courses</label>
+              <select className="form-select" value={selectedCourse} onChange={handleCourseChange}>
+                <option value="">-- Select a Course --</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>{c.title}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-      {loading && <div className="text-center"><div className="spinner-border text-primary"></div></div>}
+          {loading && <div className="text-center"><div className="spinner-border text-primary"></div></div>}
 
-      {!loading && enrollments.length > 0 && (
-        <div className="table-responsive">
-          <table className="table table-hover align-middle">
-            <thead className="table-light">
-              <tr>
-                <th>Student</th>
-                <th>Enrolled</th>
-                <th>Current Grade</th>
-                <th>Assign Grade</th>
-              </tr>
-            </thead>
-            <tbody>
-              {enrollments.map((e) => (
-                <tr key={e.id}>
-                  <td className="fw-semibold">{e.studentName}</td>
-                  <td>{new Date(e.enrollmentDate).toLocaleDateString()}</td>
-                  <td>
-                    <span className={`badge ${e.grade ? 'bg-success' : 'bg-secondary'}`}>
-                      {e.grade || 'None'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="input-group input-group-sm" style={{ maxWidth: 200 }}>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="A, B+, Pass…"
-                        value={gradeInputs[e.studentId] ?? ''}
-                        onChange={(ev) =>
-                          setGradeInputs({ ...gradeInputs, [e.studentId]: ev.target.value })
-                        }
-                        maxLength={4}
-                      />
-                      <button
-                        className="btn btn-outline-success"
-                        onClick={() => handleGradeSave(e.studentId, e.courseId)}
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+          {!loading && enrollments.length > 0 && (
+            <div className="table-responsive">
+              <table className="table table-hover align-middle">
+                <thead className="table-light">
+                  <tr>
+                    <th>Student</th>
+                    <th>Enrolled</th>
+                    <th>Current Grade</th>
+                    <th>Assign Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {enrollments.map((e) => (
+                    <tr key={e.id}>
+                      <td className="fw-semibold">{e.studentName}</td>
+                      <td>{new Date(e.enrollmentDate).toLocaleDateString()}</td>
+                      <td>
+                        <span className={`badge ${e.grade ? 'bg-success' : 'bg-secondary'}`}>
+                          {e.grade || 'None'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="input-group input-group-sm" style={{ maxWidth: 200 }}>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="A, B+, Pass…"
+                            value={gradeInputs[e.studentId] ?? ''}
+                            onChange={(ev) =>
+                              setGradeInputs({ ...gradeInputs, [e.studentId]: ev.target.value })
+                            }
+                            maxLength={4}
+                          />
+                          <button
+                            className="btn btn-outline-success"
+                            onClick={() => handleGradeSave(e.studentId, e.courseId)}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-      {!loading && selectedCourse && enrollments.length === 0 && (
-        <div className="alert alert-info">No students enrolled in this course.</div>
+          {!loading && selectedCourse && enrollments.length === 0 && (
+            <div className="alert alert-info">No students enrolled in this course.</div>
+          )}
+        </>
       )}
     </>
   );

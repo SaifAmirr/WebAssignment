@@ -93,5 +93,30 @@ namespace WebAssignment.Services
 
             return user;
         }
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.OrderBy(u => u.Username).ToListAsync();
+        }
+
+        public async Task<User?> UpdateUserRoleAsync(int userId, UserRole role)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return null;
+
+            user.Role = role;
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<bool> LinkUserToInstructorAsync(int userId, int instructorId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            user.InstructorId = instructorId;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

@@ -1,13 +1,21 @@
-﻿import React from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProtectedRoute({ children, roles }) {
-  const { token, user } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (loading) return (
+    <div className="container mt-5 text-center">
+      <div className="spinner-border text-primary"></div>
+    </div>
+  );
 
-  if (roles && user && !roles.includes(user.role)) {
+  if (!user) return <Navigate to="/login" replace />;
+
+  if (user.role === 'Pending') return <Navigate to="/" replace />;
+
+  if (roles && !roles.includes(user.role)) {
     return (
       <div className="container mt-5 text-center">
         <h4 className="text-danger">Access Denied</h4>

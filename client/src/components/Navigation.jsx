@@ -2,7 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ROLE_BADGE = { Admin: 'bg-danger', Instructor: 'bg-warning text-dark', Student: 'bg-success' };
+const ROLE_BADGE = { Admin: 'bg-danger', Instructor: 'bg-warning text-dark', Student: 'bg-success', Pending: 'bg-secondary' };
 
 export default function Navigation() {
   const { user, logout } = useAuth();
@@ -11,7 +11,7 @@ export default function Navigation() {
   const isInstructor = user?.role === 'Instructor';
   const isStudent    = user?.role === 'Student';
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = async () => { await logout(); navigate('/login'); };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
@@ -27,20 +27,25 @@ export default function Navigation() {
         </button>
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
-            <li className="nav-item">
-              <Link className="nav-link" to="/courses">Courses</Link>
-            </li>
+            {/* Courses visible to Admin and Student (Instructor has its own scoped link below) */}
+            {(isAdmin || user?.role === 'Student') && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/courses">Courses</Link>
+              </li>
+            )}
 
             {/* Admin only */}
             {isAdmin && <>
               <li className="nav-item"><Link className="nav-link" to="/students">Students</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/instructors">Instructors</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/enrollments">Enrollments</Link></li>
+              <li className="nav-item"><Link className="nav-link" to="/users">Users</Link></li>
             </>}
 
             {/* Instructor only */}
             {isInstructor && <>
-              <li className="nav-item"><Link className="nav-link" to="/students">Students</Link></li>
+              <li className="nav-item"><Link className="nav-link" to="/courses">My Courses</Link></li>
+              <li className="nav-item"><Link className="nav-link" to="/students">My Students</Link></li>
               <li className="nav-item"><Link className="nav-link" to="/enrollments">Grade Students</Link></li>
             </>}
 

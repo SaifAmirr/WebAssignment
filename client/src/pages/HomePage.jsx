@@ -1,15 +1,37 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getStudentById } from '../services/studentService';
 
 export default function HomePage() {
   const { user } = useAuth();
 
-  if (!user)       return <GuestHome />;
+  if (!user)                      return <GuestHome />;
+  if (user.role === 'Pending')    return <PendingHome user={user} />;
   if (user.role === 'Admin')      return <AdminHome />;
   if (user.role === 'Instructor') return <InstructorHome user={user} />;
   if (user.role === 'Student')    return <StudentHome user={user} />;
   return null;
+}
+
+/* ─── Pending ─────────────────────────────────────────────────────── */
+function PendingHome({ user }) {
+  const { logout } = useAuth();
+  return (
+    <div className="container mt-5 text-center" style={{ maxWidth: 500 }}>
+      <div className="card shadow-sm border-0 p-5">
+        <div className="fs-1 mb-3">⏳</div>
+        <h3 className="fw-bold mb-2">Waiting for approval</h3>
+        <p className="text-muted mb-4">
+          Hi <strong>{user.username}</strong>, your account has been created but a role has not been
+          assigned yet. Please contact your admin to get access.
+        </p>
+        <button className="btn btn-outline-secondary btn-sm mx-auto" style={{ width: 120 }} onClick={logout}>
+          Logout
+        </button>
+      </div>
+    </div>
+  );
 }
 
 /* ─── Guest ───────────────────────────────────────────────────────── */
@@ -39,6 +61,7 @@ function AdminHome() {
     { to: '/students',    icon: '🎓', title: 'Students',    desc: 'Create student records and track their GPA.' },
     { to: '/instructors', icon: '👨‍🏫', title: 'Instructors', desc: 'Add instructors and manage their profiles.' },
     { to: '/enrollments', icon: '📋', title: 'Enrollments', desc: 'Enroll students into courses and update grades.' },
+    { to: '/users',       icon: '🔑', title: 'Users',       desc: 'Assign roles to registered users.' },
   ];
   return (
     <div className="container mt-5">
@@ -46,7 +69,7 @@ function AdminHome() {
       <p className="text-muted mb-4">Manage the entire system from here.</p>
       <div className="row g-4">
         {cards.map((c) => (
-          <div key={c.to} className="col-md-3">
+          <div key={c.to} className="col-md-4">
             <div className="card h-100 shadow-sm border-0 text-center p-3">
               <div className="fs-1 mb-2">{c.icon}</div>
               <h5 className="fw-semibold">{c.title}</h5>
@@ -66,6 +89,13 @@ function InstructorHome({ user }) {
     <div className="container mt-5">
       <h2 className="fw-bold mb-1">Welcome, {user.username}</h2>
       <p className="text-muted mb-4">Here is what you can do as an Instructor.</p>
+
+      {!user.instructorId && (
+        <div className="alert alert-warning mb-4">
+          Your account has not been linked to an instructor record yet. Contact your admin to complete the setup.
+        </div>
+      )}
+
       <div className="row g-4 justify-content-center">
         <div className="col-md-4">
           <div className="card h-100 shadow-sm border-0 text-center p-4">
@@ -82,7 +112,7 @@ function InstructorHome({ user }) {
             <div className="fs-1 mb-2">📝</div>
             <h5 className="fw-semibold">Grade Students</h5>
             <p className="text-muted small">
-              Select a course to see enrolled students and assign or update their final grades.
+              Select one of your assigned courses to see enrolled students and assign final grades.
             </p>
             <Link to="/enrollments" className="btn btn-primary btn-sm mt-auto">Grade Students</Link>
           </div>
@@ -107,6 +137,7 @@ function StudentHome({ user }) {
   const { linkStudentId } = useAuth();
   const [form, setForm]       = useState({ firstName: '', lastName: '', studentId: '' });
   const [linkError, setLinkError] = useState('');
+  const [linking, setLinking] = useState(false);
   const [linked, setLinked]   = useState(false);
 
   const handleChange = (e) => {
@@ -114,7 +145,7 @@ function StudentHome({ user }) {
     setLinkError('');
   };
 
-  const handleLink = () => {
+  const handleLink = async () => {
     const { firstName, lastName, studentId } = form;
     if (!firstName.trim() || !lastName.trim()) {
       setLinkError('Please enter both your first and last name.');
@@ -124,8 +155,23 @@ function StudentHome({ user }) {
       setLinkError('Please enter a valid Student ID.');
       return;
     }
-    linkStudentId(Number(studentId));
-    setLinked(true);
+    setLinking(true);
+    setLinkError('');
+    try {
+      const res = await getStudentById(Number(studentId));
+      const student = res.data;
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.toLowerCase();
+      if (student.name?.toLowerCase() !== fullName) {
+        setLinkError('Name does not match the student record. Please check your name and ID.');
+        return;
+      }
+      linkStudentId(Number(studentId));
+      setLinked(true);
+    } catch {
+      setLinkError('Student ID not found. Please check your ID and try again.');
+    } finally {
+      setLinking(false);
+    }
   };
 
   const isLinked = user.studentId || linked;
@@ -177,8 +223,8 @@ function StudentHome({ user }) {
                 />
               </div>
               <div className="col-sm-2">
-                <button className="btn btn-warning w-100 fw-semibold" onClick={handleLink}>
-                  Confirm
+                <button className="btn btn-warning w-100 fw-semibold" onClick={handleLink} disabled={linking}>
+                  {linking ? 'Checking…' : 'Confirm'}
                 </button>
               </div>
             </div>

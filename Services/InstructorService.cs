@@ -109,5 +109,12 @@ namespace WebAssignment.Services
                 })
                 .ToListAsync();
         }
+
+        public async Task DeleteAsync(int id)
+        {
+            var instructor = await GetInstructorEntityAsync(id);
+            _context.Instructors.Remove(instructor);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -13,5 +13,6 @@ namespace WebAssignment.Interfaces
         Task UpdateProfileAsync(InstructorProfile profile);
         Task<InstructorProfileResponseDto> GetProfileAsync(int instructorId);
         Task<List<CourseResponseDto>> GetInstructorCoursesAsync(int instructorId);
+        Task DeleteAsync(int id);
     }
 }

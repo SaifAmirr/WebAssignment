@@ -4,6 +4,7 @@ namespace WebAssignment.Models
     {
         Student,
         Instructor,
-        Admin
+        Admin,
+        Pending   // newly registered, waiting for admin to assign a role
     }
 }
