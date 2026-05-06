@@ -24,6 +24,11 @@ namespace WebAssignment
                 .HasIndex(u => u.Username)
                 .IsUnique();
 
+            modelBuilder.Entity<Student>()
+                .HasIndex(s => s.StudentNumber)
+                .IsUnique()
+                .HasFilter("\"StudentNumber\" IS NOT NULL");
+
             modelBuilder.Entity<InstructorProfile>()
                 .HasOne(ip => ip.Instructor)
                 .WithOne(i => i.InstructorProfile)

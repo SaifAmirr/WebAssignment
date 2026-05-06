@@ -43,6 +43,16 @@ namespace WebAssignment.Controllers
             }
         }
 
+        // Lookup by student number (used for account linking)
+        [HttpGet("by-number/{number}")]
+        [Authorize(Roles = "Student,Instructor,Admin")]
+        public async Task<IActionResult> GetByStudentNumber(int number)
+        {
+            var student = await _service.GetByStudentNumberAsync(number);
+            if (student == null) return NotFound("No student found with that student number.");
+            return Ok(student);
+        }
+
         // Endpoint 3 — Add Student
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -55,6 +65,7 @@ namespace WebAssignment.Controllers
 
             var student = new Student
             {
+                StudentNumber = dto.StudentNumber,
                 Name = dto.Name,
                 GPA = dto.GPA
             };
@@ -84,6 +95,7 @@ namespace WebAssignment.Controllers
                 var student = new Student
                 {
                     Id = id,
+                    StudentNumber = dto.StudentNumber,
                     Name = dto.Name,
                     GPA = dto.GPA
                 };

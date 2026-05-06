@@ -21,6 +21,7 @@ namespace WebAssignment.Services
             .Select(s => new StudentResponseDto
             {
                 Id = s.Id,
+                StudentNumber = s.StudentNumber,
                 Name = s.Name,
                 GPA = s.GPA
             })
@@ -34,10 +35,26 @@ namespace WebAssignment.Services
                 .Select(s => new StudentResponseDto
                 {
                     Id = s.Id,
+                    StudentNumber = s.StudentNumber,
                     Name = s.Name,
                     GPA = s.GPA
                 })
                 .FirstOrDefaultAsync() ?? throw new KeyNotFoundException($"Student with id {id} not found.");
+        }
+
+        public async Task<StudentResponseDto?> GetByStudentNumberAsync(int studentNumber)
+        {
+            return await _context.Students
+                .AsNoTracking()
+                .Where(s => s.StudentNumber == studentNumber)
+                .Select(s => new StudentResponseDto
+                {
+                    Id = s.Id,
+                    StudentNumber = s.StudentNumber,
+                    Name = s.Name,
+                    GPA = s.GPA
+                })
+                .FirstOrDefaultAsync();
         }
 
         private async Task<Student> GetStudentEntityAsync(int id)

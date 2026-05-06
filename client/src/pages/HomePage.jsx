@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getStudentById } from '../services/studentService';
+import { getStudentByNumber } from '../services/studentService';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -135,7 +135,7 @@ function InstructorHome({ user }) {
 /* ─── Student ─────────────────────────────────────────────────────── */
 function StudentHome({ user }) {
   const { linkStudentId } = useAuth();
-  const [form, setForm]       = useState({ firstName: '', lastName: '', studentId: '' });
+  const [form, setForm]       = useState({ firstName: '', lastName: '', studentNumber: '' });
   const [linkError, setLinkError] = useState('');
   const [linking, setLinking] = useState(false);
   const [linked, setLinked]   = useState(false);
@@ -146,29 +146,29 @@ function StudentHome({ user }) {
   };
 
   const handleLink = async () => {
-    const { firstName, lastName, studentId } = form;
+    const { firstName, lastName, studentNumber } = form;
     if (!firstName.trim() || !lastName.trim()) {
       setLinkError('Please enter both your first and last name.');
       return;
     }
-    if (!studentId || isNaN(Number(studentId)) || Number(studentId) < 1) {
-      setLinkError('Please enter a valid Student ID.');
+    if (!studentNumber || isNaN(Number(studentNumber)) || Number(studentNumber) < 1) {
+      setLinkError('Please enter a valid Student Number.');
       return;
     }
     setLinking(true);
     setLinkError('');
     try {
-      const res = await getStudentById(Number(studentId));
+      const res = await getStudentByNumber(Number(studentNumber));
       const student = res.data;
       const fullName = `${firstName.trim()} ${lastName.trim()}`.toLowerCase();
       if (student.name?.toLowerCase() !== fullName) {
-        setLinkError('Name does not match the student record. Please check your name and ID.');
+        setLinkError('Name does not match the student record. Please check your name and Student Number.');
         return;
       }
-      linkStudentId(Number(studentId));
+      linkStudentId(student.id); // store the DB id for API calls
       setLinked(true);
     } catch {
-      setLinkError('Student ID not found. Please check your ID and try again.');
+      setLinkError('Student Number not found. Please check your number and try again.');
     } finally {
       setLinking(false);
     }
@@ -187,8 +187,8 @@ function StudentHome({ user }) {
           <div className="card-body">
             <h6 className="fw-bold mb-1 text-warning">One more step before you can enroll</h6>
             <p className="text-muted small mb-3">
-              Enter your name and Student ID exactly as your admin registered you.
-              Your admin can find your Student ID in the <strong>Students</strong> list.
+              Enter your name and Student Number exactly as your admin registered you.
+              Your admin can find your Student Number in the <strong>Students</strong> list.
             </p>
             <div className="row g-2">
               <div className="col-sm-4">
@@ -215,9 +215,9 @@ function StudentHome({ user }) {
                 <input
                   type="number"
                   className="form-control"
-                  placeholder="Student ID"
-                  name="studentId"
-                  value={form.studentId}
+                  placeholder="Student No."
+                  name="studentNumber"
+                  value={form.studentNumber}
                   onChange={handleChange}
                   min={1}
                 />

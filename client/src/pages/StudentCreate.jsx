@@ -4,7 +4,7 @@ import { createStudent } from '../services/studentService';
 
 export default function StudentCreate() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', gpa: 0.0 });
+  const [form, setForm] = useState({ studentNumber: '', name: '', gpa: 0.0 });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function StudentCreate() {
     setError('');
     setLoading(true);
     try {
-      await createStudent({ name: form.name, gpa: Number(form.gpa) });
+      await createStudent({ studentNumber: Number(form.studentNumber), name: form.name, gpa: Number(form.gpa) });
       setSuccess('Student created successfully!');
       setTimeout(() => navigate('/students'), 1000);
     } catch (err) {
@@ -41,6 +41,20 @@ export default function StudentCreate() {
               {error && <div className="alert alert-danger">{error}</div>}
               {success && <div className="alert alert-success">{success}</div>}
               <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label className="form-label">Student Number</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    name="studentNumber"
+                    value={form.studentNumber}
+                    onChange={handleChange}
+                    required
+                    min={1}
+                    placeholder="e.g. 20231234"
+                  />
+                  <div className="form-text">A unique number the student will use to link their account.</div>
+                </div>
                 <div className="mb-3">
                   <label className="form-label">Student Name</label>
                   <input

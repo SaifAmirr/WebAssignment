@@ -55,15 +55,8 @@ function InstructorStudentView({ user }) {
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [error, setError]                 = useState('');
 
-  if (!user?.instructorId) return (
-    <div className="container mt-4">
-      <div className="alert alert-warning">
-        Your account is not linked to an instructor record. Contact your admin.
-      </div>
-    </div>
-  );
-
   useEffect(() => {
+    if (!user?.instructorId) return;
     getInstructorCourses(user.instructorId)
       .then((res) => {
         setCourses(res.data);
@@ -71,17 +64,25 @@ function InstructorStudentView({ user }) {
       })
       .catch(() => setError('Failed to load your courses.'))
       .finally(() => setLoadingCourses(false));
-  }, [user.instructorId]);
+  }, [user?.instructorId]);
 
   useEffect(() => {
     if (!activeCourse) return;
-    if (enrollments[activeCourse]) return; // already fetched
+    if (enrollments[activeCourse]) return;
     setLoadingStudents(true);
     getCourseEnrollments(activeCourse)
       .then((res) => setEnrollments((prev) => ({ ...prev, [activeCourse]: res.data })))
       .catch(() => setError('Failed to load students for this course.'))
       .finally(() => setLoadingStudents(false));
   }, [activeCourse]);
+
+  if (!user?.instructorId) return (
+    <div className="container mt-4">
+      <div className="alert alert-warning">
+        Your account is not linked to an instructor record. Contact your admin.
+      </div>
+    </div>
+  );
 
   if (loadingCourses) return <Spinner />;
 
@@ -170,7 +171,7 @@ function StudentTable({ students, showGpa, isAdmin }) {
       <table className="table table-hover align-middle">
         <thead className="table-light">
           <tr>
-            <th>#</th>
+            <th>Student No.</th>
             <th>Name</th>
             {showGpa && <th>GPA</th>}
             <th>Actions</th>
@@ -179,7 +180,7 @@ function StudentTable({ students, showGpa, isAdmin }) {
         <tbody>
           {students.map((s) => (
             <tr key={s.id}>
-              <td>{s.id}</td>
+              <td className="fw-semibold text-primary">{s.studentNumber ?? '—'}</td>
               <td className="fw-semibold">{s.name}</td>
               {showGpa && (
                 <td>

@@ -7,6 +7,7 @@ namespace WebAssignment.Interfaces
     {
         Task<List<StudentResponseDto>> GetAllAsync();
         Task<StudentResponseDto> GetByIdAsync(int id);
+        Task<StudentResponseDto?> GetByStudentNumberAsync(int studentNumber);
         Task AddAsync(Student student);
         Task UpdateAsync(Student student);
         Task EnrollStudentInCourseAsync(int studentId, int courseId);
